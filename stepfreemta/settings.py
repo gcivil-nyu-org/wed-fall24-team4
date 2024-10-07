@@ -51,7 +51,6 @@ MIDDLEWARE = [
 ]
 
 # API Key for Google Map API
-GOOGLE_MAPS_API_KEY = "AIzaSyAVLOEAlyq6JQc1nJiSn1zU6tEBI7jJ_ZA"
 
 ROOT_URLCONF = 'stepFreeMTA.urls'
 
