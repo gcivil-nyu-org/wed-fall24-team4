@@ -20,5 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('app/', include('app.urls')),
     path('admin/', admin.site.urls),
+    path('maps/', include('maps.urls')),
 ]
 
