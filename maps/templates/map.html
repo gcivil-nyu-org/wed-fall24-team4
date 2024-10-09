@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Map Route Finder</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        #controls {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h3>Find a Route on Google Map</h3>
+
+    <!-- Input fields and button for user input -->
+    <div id="controls">
+        <label for="start">Starting Point:</label>
+        <input type="text" id="start" placeholder="Enter starting location">
+        
+        <label for="end">Ending Point:</label>
+        <input type="text" id="end" placeholder="Enter destination">
+        
+        <button onclick="findRoute()">Find Route</button>
+    </div>
+
+    <!-- Map container -->
+    <div id="map"></div>
+
+    <!-- Directions List -->
+    <h3>Route Steps</h3>
+    <ul id="directions-list"></ul>
+
+    <script>
+        let map, directionsService, directionsRenderer;
+
+        function initMap() {
+            // Initialize the map centered on a default location
+            const location = { lat: 40.7128, lng: -74.0060 }; // New York City
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+                center: location
+            });
+
+            // Initialize directions service and renderer
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({ 
+                map: map,
+                suppressMarkers: false,
+                draggable: false 
+            });
+        }
+
+        function findRoute() {
+            // Get user input for start and end points
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+
+            if (start && end) {
+                // Define the route request without the key field
+                const request = {
+                    origin: start,
+                    destination: end,
+                    travelMode: 'TRANSIT' // Options: 'WALKING', 'BICYCLING', 'DRIVING'
+                };
+
+                // Request route from directions service
+                directionsService.route(request, function(result, status) {
+                    console.log("Route status:", status); // Log status for debugging
+                    if (status === 'OK') {
+                        directionsRenderer.setMap(map); // Ensure renderer is set to the map
+                        directionsRenderer.setDirections(result); // Display route on the map
+                        displayRouteSteps(result);
+                    } else {
+                        alert("Could not find route: " + status);
+                    }
+                });
+            } else {
+                alert("Please enter both a starting point and an ending point.");
+            }
+        }
+
+        function displayRouteSteps(result) {
+            const directionsList = document.getElementById('directions-list');
+            directionsList.innerHTML = ''; // Clear previous directions
+
+            // Extract and display each step in the route
+            const steps = result.routes[0].legs[0].steps;
+            for (let i = 0; i < steps.length; i++) {
+                const step = steps[i];
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `${step.instructions} - ${step.distance.text}`;
+                directionsList.appendChild(listItem);
+            }
+        }
+    </script>
+</body>
+</html>

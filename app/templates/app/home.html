@@ -1,0 +1,15 @@
+{% for message in messages %}
+    <p>{{ message }}</p>
+{% endfor %}
+
+
+{% if user.is_authenticated %}
+  <form method="POST" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+  </form>
+{% else %}
+  <a href="{% url 'register' %}">Register</a>
+  <a href="{% url 'login' %}">Login</a>
+  <a href="{% url 'map_view' %}">Go to map as guest</a>
+{% endif %}
