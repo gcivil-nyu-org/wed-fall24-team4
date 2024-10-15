@@ -1,6 +1,6 @@
 ### Usage
 
-1. **Set up your environmen in local:**
+1. **Set up your environment:**
    - Create a `.env` file in the root directory of your project.
    - Add your Google Maps API key to the `.env` file:
      ```bash
@@ -18,5 +18,10 @@
    ```bash
    python manage.py migrate
    python manage.py makemigrations app
+   ```
+    Then:
+    ```bash
+    python manage.py runserver 
+    ```
 
 Link to website: [http://stepfreemta-env.eba-je3qmwfd.us-west-2.elasticbeanstalk.com/]
