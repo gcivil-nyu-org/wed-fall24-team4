@@ -13,11 +13,16 @@
 
         #controls {
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         nav {
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -25,7 +30,6 @@
 <body>
     <nav>
         <h3>Find a Route on Google Map</h3>
-
         {% if user.is_authenticated %}
         <form method="POST" action="{% url 'app:logout' %}">
             {% csrf_token %}
@@ -37,18 +41,17 @@
             <a href="{% url 'app:register' %}"><button>Register</button></a>
         </div>
         {% endif %}
-        
     </nav>
-
 
     <!-- Input fields and button for user input -->
     <div id="controls">
         <label for="start">Starting Point:</label>
         <input type="text" id="start" placeholder="Enter starting location">
+        <button onclick="useCurrentLocation()">Use Current Location</button>
 
         <label for="end">Ending Point:</label>
         <input type="text" id="end" placeholder="Enter destination">
-
+        
         <button onclick="findRoute()">Find Route</button>
     </div>
 
@@ -60,8 +63,8 @@
     <ul id="directions-list"></ul>
 
     <script>
-        let map, directionsService, directionsRenderer;
-
+        let map, directionsService, directionsRenderer, currentLocationMarker;
+    
         function initMap() {
             // Initialize the map centered on a default location
             const location = { lat: 40.7128, lng: -74.0060 }; // New York City
@@ -69,7 +72,7 @@
                 zoom: 13,
                 center: location
             });
-
+    
             // Initialize directions service and renderer
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({
@@ -78,40 +81,90 @@
                 draggable: false
             });
         }
-
-        function findRoute() {
-            // Get user input for start and end points
-            const start = document.getElementById('start').value;
-            const end = document.getElementById('end').value;
-
-            if (start && end) {
-                // Define the route request without the key field
-                const request = {
-                    origin: start,
-                    destination: end,
-                    travelMode: 'TRANSIT' // Options: 'WALKING', 'BICYCLING', 'DRIVING'
-                };
-
-                // Request route from directions service
-                directionsService.route(request, function (result, status) {
-                    console.log("Route status:", status); // Log status for debugging
-                    if (status === 'OK') {
-                        directionsRenderer.setMap(map); // Ensure renderer is set to the map
-                        directionsRenderer.setDirections(result); // Display route on the map
-                        displayRouteSteps(result);
-                    } else {
-                        alert("Could not find route: " + status);
+    
+        function useCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // Get coordinates of user's current location
+                        const currentLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+    
+                        // Center map on the current location
+                        map.setCenter(currentLocation);
+    
+                        // Remove any existing marker
+                        if (currentLocationMarker) {
+                            currentLocationMarker.setMap(null);
+                        }
+    
+                        // Drop a pin (marker) on the user's current location
+                        currentLocationMarker = new google.maps.Marker({
+                            position: currentLocation,
+                            map: map,
+                            title: "You are here"
+                        });
+    
+                        // Reverse geocode to get the address of the current location
+                        const geocoder = new google.maps.Geocoder();
+                        geocoder.geocode({ location: currentLocation }, (results, status) => {
+                            if (status === "OK" && results[0]) {
+                                document.getElementById("start").value = results[0].formatted_address;
+                            } else {
+                                alert("Could not determine address for current location.");
+                            }
+                        });
+                    },
+                    (error) => {
+                        alert("Error fetching current location: " + error.message);
                     }
-                });
+                );
             } else {
-                alert("Please enter both a starting point and an ending point.");
+                alert("Geolocation is not supported by this browser.");
             }
         }
+    
+        function findRoute() {
+        // Remove the current location marker when finding a route
+        if (currentLocationMarker) {
+            currentLocationMarker.setMap(null);
+            currentLocationMarker = null;
+        }
 
+        // Get user input for start and end points
+        const start = document.getElementById('start').value;
+        const end = document.getElementById('end').value;
+
+        if (start && end) {
+            // Define the route request
+            const request = {
+                origin: start,
+                destination: end,
+                travelMode: 'TRANSIT' // Options: 'WALKING', 'BICYCLING', 'DRIVING'
+            };
+
+            // Request route from directions service
+            directionsService.route(request, function (result, status) {
+                console.log("Route status:", status); // Log status for debugging
+                if (status === 'OK') {
+                    directionsRenderer.setMap(map); // Ensure renderer is set to the map
+                    directionsRenderer.setDirections(result); // Display route on the map
+                    displayRouteSteps(result);
+                } else {
+                    alert("Could not find route: " + status);
+                }
+            });
+        } else {
+            alert("Please enter both a starting point and an ending point.");
+        }
+    }
+    
         function displayRouteSteps(result) {
             const directionsList = document.getElementById('directions-list');
             directionsList.innerHTML = ''; // Clear previous directions
-
+    
             // Extract and display each step in the route
             const steps = result.routes[0].legs[0].steps;
             for (let i = 0; i < steps.length; i++) {
