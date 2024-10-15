@@ -1,29 +1,54 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Google Map Route Finder</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async
+        defer></script>
     <style>
         #map {
             height: 500px;
             width: 100%;
         }
+
         #controls {
             margin-bottom: 10px;
         }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+        }
     </style>
 </head>
+
 <body>
-    <h3>Find a Route on Google Map</h3>
+    <nav>
+        <h3>Find a Route on Google Map</h3>
+
+        {% if user.is_authenticated %}
+        <form method="POST" action="{% url 'app:logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+        {% else %}
+        <div>
+            <a href="{% url 'app:login' %}"><button>Login</button></a>
+            <a href="{% url 'app:register' %}"><button>Register</button></a>
+        </div>
+        {% endif %}
+        
+    </nav>
+
 
     <!-- Input fields and button for user input -->
     <div id="controls">
         <label for="start">Starting Point:</label>
         <input type="text" id="start" placeholder="Enter starting location">
-        
+
         <label for="end">Ending Point:</label>
         <input type="text" id="end" placeholder="Enter destination">
-        
+
         <button onclick="findRoute()">Find Route</button>
     </div>
 
@@ -47,10 +72,10 @@
 
             // Initialize directions service and renderer
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({ 
+            directionsRenderer = new google.maps.DirectionsRenderer({
                 map: map,
                 suppressMarkers: false,
-                draggable: false 
+                draggable: false
             });
         }
 
@@ -68,7 +93,7 @@
                 };
 
                 // Request route from directions service
-                directionsService.route(request, function(result, status) {
+                directionsService.route(request, function (result, status) {
                     console.log("Route status:", status); // Log status for debugging
                     if (status === 'OK') {
                         directionsRenderer.setMap(map); // Ensure renderer is set to the map
@@ -98,4 +123,5 @@
         }
     </script>
 </body>
+
 </html>

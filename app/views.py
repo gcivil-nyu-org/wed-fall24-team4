@@ -15,7 +15,7 @@ def register_view(request):
             user = form.save()  # Save the user to the database
             login(request, user)  # Automatically log the user in after registration
             messages.success(request, f'Account created successfully! Welcome, {user.username}!')
-            return redirect('home')  # Redirect to a 'home' page or another page
+            return redirect('maps:map_view') 
         else:
             messages.error(request, 'Registration failed. Please try again.')
     else:
@@ -31,7 +31,7 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             messages.success(request, f'Welcome, {user.username}! You are now logged in.')
-            return redirect('home')  # Redirect to home page or another page
+            return redirect('maps:map_view') 
         else:
             messages.error(request, 'Invalid username or password.')
     else:
@@ -44,4 +44,4 @@ def logout_view(request):
     if request.method == 'POST':
         logout(request)
         messages.success(request, 'You have successfully logged out.')
-        return redirect('home')  # Redirect to home page or another page
+        return redirect('maps:map_view')  
