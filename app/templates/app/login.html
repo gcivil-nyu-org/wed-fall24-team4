@@ -8,13 +8,13 @@
     <button type="submit">Login</button>
   </form>
   <label for="register">Create Account:</label>
-  <a href="{% url 'register' %}"><button name="register">Register</button></a>
+  <a href="{% url 'app:register' %}"><button name="register">Register</button></a>
 
-  {% if messages %}
+  <!-- {% if messages %}
     <ul>
       {% for message in messages %}
         <li>{{ message }}</li>
       {% endfor %}
     </ul>
-  {% endif %}
+  {% endif %} -->
 {% endblock %}
