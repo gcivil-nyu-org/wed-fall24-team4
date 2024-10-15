@@ -6,13 +6,13 @@
     <button type="submit">Register</button>
   </form>
   <label for="login">Already have an account?</label>
-  <a href="{% url 'login' %}"><button name="login">Login</button></a>
+  <a href="{% url 'app:login' %}"><button name="login">Login</button></a>
 
-  {% if messages %}
+  <!-- {% if messages %}
     <ul>
       {% for message in messages %}
         <li>{{ message }}</li>
       {% endfor %}
     </ul>
-  {% endif %}
+  {% endif %} -->
 {% endblock %}
