@@ -3,8 +3,7 @@
 
 <head>
     <title>Google Map Route Finder</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async
-        defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
     <style>
         #map {
             height: 500px;
@@ -23,6 +22,17 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+        }
+        .train-icon {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            color: white;
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -70,50 +80,70 @@
 
     <script>
         let map, directionsService, directionsRenderer, currentLocationMarker;
-    
+        let polylines = []; // Array to store polylines
+
+        // Color map for NYC subway lines
+        const subwayLineColors = {
+            'A': '#0039A6',   // Blue
+            'C': '#0039A6',   // Blue
+            'E': '#0039A6',   // Blue
+            'B': '#FF6319',   // Orange
+            'D': '#FF6319',   // Orange
+            'F': '#FF6319',   // Orange
+            'M': '#FF6319',   // Orange
+            'G': '#6CBE45',   // Light Green
+            'L': '#A7A9AC',   // Gray
+            '1': '#EE352E',   // Red
+            '2': '#EE352E',   // Red
+            '3': '#EE352E',   // Red
+            '4': '#00933C',   // Green
+            '5': '#00933C',   // Green
+            '6': '#00933C',   // Green
+            'N': '#FCCC0A',   // Yellow
+            'Q': '#FCCC0A',   // Yellow
+            'R': '#FCCC0A',   // Yellow
+            'J': '#996633',   // Brown
+            'Z': '#996633',   // Brown
+        };
+        
         function initMap() {
-            // Initialize the map centered on a default location
             const location = { lat: 40.7128, lng: -74.0060 }; // New York City
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
                 center: location
             });
-    
-            // Initialize directions service and renderer
+
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({
                 map: map,
+                suppressPolylines: false, // Do not suppress default polylines
                 suppressMarkers: false,
-                draggable: false
+                draggable: false,
+                polylineOptions: {strokeColor: '#000000', strokeOpacity: 0.1, strokeWeight: 5}
             });
         }
-    
+
         function useCurrentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        // Get coordinates of user's current location
                         const currentLocation = {
                             lat: position.coords.latitude,
                             lng: position.coords.longitude
                         };
-    
-                        // Center map on the current location
+
                         map.setCenter(currentLocation);
-    
-                        // Remove any existing marker
+
                         if (currentLocationMarker) {
                             currentLocationMarker.setMap(null);
                         }
-    
-                        // Drop a pin (marker) on the user's current location
+
                         currentLocationMarker = new google.maps.Marker({
                             position: currentLocation,
                             map: map,
                             title: "You are here"
                         });
-    
-                        // Reverse geocode to get the address of the current location
+
                         const geocoder = new google.maps.Geocoder();
                         geocoder.geocode({ location: currentLocation }, (results, status) => {
                             if (status === "OK" && results[0]) {
@@ -131,54 +161,103 @@
                 alert("Geolocation is not supported by this browser.");
             }
         }
-    
+
         function findRoute() {
-        // Remove the current location marker when finding a route
-        if (currentLocationMarker) {
-            currentLocationMarker.setMap(null);
-            currentLocationMarker = null;
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+
+            if (start && end) {
+                const request = {
+                    origin: start,
+                    destination: end,
+                    travelMode: 'TRANSIT',
+                    transitOptions: { modes: ['SUBWAY'] } // Filter for subways
+                };
+
+                clearPolylines(); // Clear previous lines
+
+                directionsService.route(request, function(result, status) {
+                    if (status === 'OK') {
+                        directionsRenderer.setDirections(result); // Display default route
+                        displayRouteSteps(result); // Show route steps
+                        drawColoredOverlays(result); // Draw subway lines with intensified color
+                    } else {
+                        alert("Could not find route: " + status);
+                    }
+                });
+            } else {
+                alert("Please enter both a starting point and an ending point.");
+            }
         }
 
-        // Get user input for start and end points
-        const start = document.getElementById('start').value;
-        const end = document.getElementById('end').value;
+        function drawColoredOverlays(result) {
+            const steps = result.routes[0].legs[0].steps;
 
-        if (start && end) {
-            // Define the route request
-            const request = {
-                origin: start,
-                destination: end,
-                travelMode: 'TRANSIT' // Options: 'WALKING', 'BICYCLING', 'DRIVING'
-            };
+            steps.forEach((step) => {
+                if (step.transit) {
+                    const transit = step.transit;
+                    const lineShortName = transit.line.short_name.replace(" Line", "").trim();
+                    const lineColor = subwayLineColors[lineShortName] || '#000000'; // Use color map or default to black
 
-            // Request route from directions service
-            directionsService.route(request, function (result, status) {
-                console.log("Route status:", status); // Log status for debugging
-                if (status === 'OK') {
-                    directionsRenderer.setMap(map); // Ensure renderer is set to the map
-                    directionsRenderer.setDirections(result); // Display route on the map
-                    displayRouteSteps(result);
-                } else {
-                    alert("Could not find route: " + status);
+                    const path = google.maps.geometry.encoding.decodePath(step.polyline.points);
+
+                    // Make the original Google polylines more transparent by overlaying with a nearly transparent line
+                    const transparentLine = new google.maps.Polyline({
+                        path: path,
+                        geodesic: true,
+                        strokeColor: "#000000", // Black (or other neutral color)
+                        strokeOpacity: 0.1,  // Nearly transparent
+                        strokeWeight: 5
+                    });
+
+                    transparentLine.setMap(map);
+                    polylines.push(transparentLine);
+
+                    // Overlay a slightly wider, more opaque colored line on top
+                    const intensifiedLine = new google.maps.Polyline({
+                        path: path,
+                        geodesic: true,
+                        strokeColor: lineColor,
+                        strokeOpacity: 0.9,  // Higher opacity for subway line color
+                        strokeWeight: 7     // Slightly thicker to stand out
+                    });
+
+                    intensifiedLine.setMap(map);  // Overlay colored subway line
+                    polylines.push(intensifiedLine);
                 }
             });
-        } else {
-            alert("Please enter both a starting point and an ending point.");
         }
-    }
-    
+
+        function clearPolylines() {
+            polylines.forEach(polyline => polyline.setMap(null));
+            polylines = [];
+        }
+
         function displayRouteSteps(result) {
             const directionsList = document.getElementById('directions-list');
             directionsList.innerHTML = ''; // Clear previous directions
-    
-            // Extract and display each step in the route
+
             const steps = result.routes[0].legs[0].steps;
-            for (let i = 0; i < steps.length; i++) {
-                const step = steps[i];
+            steps.forEach((step) => {
                 const listItem = document.createElement('li');
-                listItem.innerHTML = `${step.instructions} - ${step.distance.text}`;
+                
+                if (step.transit) {
+                    const transit = step.transit;
+                    const lineName = transit.line.short_name.replace(" Line", "").trim();
+                    const lineColor = subwayLineColors[lineName] || '#000000'; // Get color from dictionary or default
+
+                    // Create the train icon as a circular span element
+                    const trainIcon = `<span class="train-icon" style="background-color:${lineColor};">${lineName}</span>`;
+                    
+                    // Display the route step with the train icon
+                    listItem.innerHTML = `${trainIcon} Take the <span style="color:${lineColor}; font-weight: bold;">${lineName}</span> subway from <strong>${transit.departure_stop.name}</strong> to <strong>${transit.arrival_stop.name}</strong>. Follow signs for ${transit.headsign}.`;
+                } else {
+                    // Display walking or other instructions
+                    listItem.innerHTML = `${step.instructions} - ${step.distance.text}`;
+                }
+                
                 directionsList.appendChild(listItem);
-            }
+            });
         }
     </script>
 </body>
