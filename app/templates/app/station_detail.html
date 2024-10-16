@@ -7,33 +7,66 @@
 </head>
 <body>
     <h1>Station Details</h1>
-    <ul>
-            <li>
-                <h2>{{ station.stop_name }}</h2>
-                <p>GTFS Stop ID: {{ station.gtfs_stop_id }}</p>
-                <p>Station ID: {{ station.station_id }}</p>
-                <p>Complex ID: {{ station.complex_id }}</p>
-                <p>Division: {{ station.division }}</p>
-                <p>Line: {{ station.line }}</p>
-                <p>Borough: {{ station.borough }}</p>
-                <p>CBD: {{ station.cbd }}</p>
-                <p>Daytime Routes: {{ station.daytime_routes }}</p>
-                <p>Structure: {{ station.structure }}</p>
-                <p>Latitude: {{ station.gtfs_latitude }}</p>
-                <p>Longitude: {{ station.gtfs_longitude }}</p>
-                <p>North Direction Label: {{ station.north_direction_label }}</p>
-                <p>South Direction Label: {{ station.south_direction_label }}</p>
-                <p>ADA Accessible: {{ station.ada }}</p>
-                <p>ADA Northbound: {{ station.ada_northbound }}</p>
-                <p>ADA Southbound: {{ station.ada_southbound }}</p>
-                <p>Georeference Latitude: {{ station.georeference_latitude }}</p>
-                <p>Georeference Longitude: {{ station.georeference_longitude }}</p>
-                <p>ADA Notes: {{ station.ada_notes }}</p>
-                <p>Computed Region YAMH 8V7K: {{ station.computed_region_yamh_8v7k }}</p>
-                <p>Computed Region WBG7 3WHC: {{ station.computed_region_wbg7_3whc }}</p>
-                <p>Computed Region KJDX G34T: {{ station.computed_region_kjdx_g34t }}</p>
-            </li>
-    </ul>
+    
+            
+    <h2>{{ station.stop_name }}</h2>
+
+    <p>GTFS Stop ID: {{ station.gtfs_stop_id }} <br>
+    Station ID: {{ station.station_id }} <br>
+     Accessible: {{ station.ada }}</p>
+
+
+    <table border="1">
+        <tr>
+            <th>Complex ID</th>
+            <th>Division</th>
+            <th>Line</th>
+            <th>Borough</th>
+            <th>CBD</th>
+            <th>Daytime Routes</th>
+            <th>Structure</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>North Direction Label</th>
+            <th>South Direction Label</th>
+            <th>ADA Accessible</th>
+            <th>ADA Northbound</th>
+            <th>ADA Southbound</th>
+            <th>Georeference Latitude</th>
+            <th>Georeference Longitude</th>
+            <th>ADA Notes</th>
+            <th>Computed Region YAMH 8V7K</th>
+            <th>Computed Region WBG7 3WHC</th>
+            <th>Computed Region KJDX G34T</th>
+        </tr>
+        <tr>
+            <td>{{ station.complex_id }}</td>
+            <td>{{ station.division }}</td>
+            <td>{{ station.line }}</td>
+            <td>{{ station.borough }}</td>
+            <td>{{ station.cbd }}</td>
+            <td>{{ station.daytime_routes }}</td>
+            <td>{{ station.structure }}</td>
+            <td>{{ station.gtfs_latitude }}</td>
+            <td>{{ station.gtfs_longitude }}</td>
+            <td>{{ station.north_direction_label }}</td>
+            <td>{{ station.south_direction_label }}</td>
+            <td>{{ station.ada }}</td>
+            <td>{{ station.ada_northbound }}</td>
+            <td>{{ station.ada_southbound }}</td>
+            <td>{{ station.georeference_latitude }}</td>
+            <td>{{ station.georeference_longitude }}</td>
+            <td>{{ station.ada_notes }}</td>
+            <td>{{ station.computed_region_yamh_8v7k }}</td>
+            <td>{{ station.computed_region_wbg7_3whc }}</td>
+            <td>{{ station.computed_region_kjdx_g34t }}</td>
+        </tr>
+    </table>
+    
+    
+    <a href="{% url 'app:stations' %}">Back</a>
+    <a href="{% url 'maps:map_view' %}">Go</a>
+    
 
 
 </body>
