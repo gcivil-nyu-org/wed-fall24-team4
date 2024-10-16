@@ -1,6 +1,6 @@
 ### Usage
 
-1. **Set up your environment:**
+1. **Set up your local environment:**
    - Create a `.env` file in the root directory of your project.
    - Add your Google Maps API key to the `.env` file:
      ```bash
