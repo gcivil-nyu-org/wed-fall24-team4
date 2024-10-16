@@ -29,14 +29,20 @@
 
 <body>
     <nav>
-        <h3>Find a Route on Google Map</h3>
+        <h3>Find a Route on Google Maps</h3>
         {% if user.is_authenticated %}
+        <h3>Hi, {{user.username}}</h3>
         <form method="POST" action="{% url 'app:logout' %}">
             {% csrf_token %}
-            <button type="submit">Logout</button>
+            <div>
+                <a href="#"><button>Messages</button></a>
+                <a href="#"><button>Notifications</button></a>
+                <button type="submit">Logout</button>
+            </div>
         </form>
         {% else %}
         <div>
+            <a href="#"><button>Notifications</button></a>
             <a href="{% url 'app:login' %}"><button>Login</button></a>
             <a href="{% url 'app:register' %}"><button>Register</button></a>
         </div>
