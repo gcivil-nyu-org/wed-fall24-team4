@@ -31,7 +31,7 @@ deploy:
   secret_access_key: $AWS_SECRET_ACCESS_KEY
   region: us-west-2
   app: stepfreemta
-  env: stepfreemta-dev
+  env: stepfreemta-env
   bucket_name: elasticbeanstalk-us-west-2-050752636242
   on:
     branch: develop
