@@ -3,8 +3,7 @@
 
 <head>
     <title>Google Map Route Finder</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async
-        defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
     <style>
         #map {
             height: 500px;
@@ -70,24 +69,26 @@
 
     <script>
         let map, directionsService, directionsRenderer, currentLocationMarker;
-    
+        let polylines = []; // Array to store the drawn polylines
+
         function initMap() {
-            // Initialize the map centered on a default location
-            const location = { lat: 40.7128, lng: -74.0060 }; // New York City
+            const location = { lat: 40.7128, lng: -74.0060 }; // Default to New York City
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
                 center: location
             });
-    
-            // Initialize directions service and renderer
-            directionsService = new google.maps.DirectionsService();
+
+            // Suppress the polylines rendered by the DirectionsRenderer
             directionsRenderer = new google.maps.DirectionsRenderer({
                 map: map,
+                suppressPolylines: true,  // This removes the default route lines
                 suppressMarkers: false,
                 draggable: false
             });
+
+            directionsService = new google.maps.DirectionsService();
         }
-    
+                    
         function useCurrentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -135,52 +136,235 @@
         }
     
         function findRoute() {
-        // Remove the current location marker when finding a route
-        if (currentLocationMarker) {
-            currentLocationMarker.setMap(null);
-            currentLocationMarker = null;
+            if (currentLocationMarker) {
+                currentLocationMarker.setMap(null);
+                currentLocationMarker = null;
+            }
+
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+
+            if (start && end) {
+                const request = {
+                    origin: start,
+                    destination: end,
+                    travelMode: 'TRANSIT',
+                    transitOptions: {
+                        modes: ['SUBWAY']
+                    }
+                };
+
+                clearPolylines(); // Clear previous polylines before drawing new ones
+
+                directionsService.route(request, function (result, status) {
+                    if (status === 'OK') {
+                        directionsRenderer.setMap(map);
+                        directionsRenderer.setDirections(result);
+                        displayRouteSteps(result); // Show route steps
+                        drawColoredLines(result); // Draw colored lines for the subway sections
+                        placeTrainIcons(result);  // Place train line icons on the start station
+                    } else {
+                        alert("Could not find route: " + status);
+                    }
+                });
+            } else {
+                alert("Please enter both a starting point and an ending point.");
+            }
         }
 
-        // Get user input for start and end points
-        const start = document.getElementById('start').value;
-        const end = document.getElementById('end').value;
+        function placeTrainIcons(result) {
+            const steps = result.routes[0].legs[0].steps;
 
-        if (start && end) {
-            // Define the route request
-            const request = {
-                origin: start,
-                destination: end,
-                travelMode: 'TRANSIT' // Options: 'WALKING', 'BICYCLING', 'DRIVING'
-            };
+            steps.forEach((step, index) => {
+                if (step.transit) {
+                    const transit = step.transit;
 
-            // Request route from directions service
-            directionsService.route(request, function (result, status) {
-                console.log("Route status:", status); // Log status for debugging
-                if (status === 'OK') {
-                    directionsRenderer.setMap(map); // Ensure renderer is set to the map
-                    directionsRenderer.setDirections(result); // Display route on the map
-                    displayRouteSteps(result);
-                } else {
-                    alert("Could not find route: " + status);
+                    // Create the icon for the train line (e.g., F, G, L)
+                    const trainIconUrl = `https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/${transit.line.short_name}_train.svg/120px-${transit.line.short_name}_train.svg.png`;
+
+                    const trainIcon = {
+                        url: trainIconUrl,
+                        scaledSize: new google.maps.Size(32, 32) // Adjust size as needed
+                    };
+
+                    // Place the train icon at the departure stop of each transit step
+                    if (transit.departure_stop && transit.departure_stop.location) {
+                        const startMarker = new google.maps.Marker({
+                            position: transit.departure_stop.location,
+                            map: map,
+                            icon: trainIcon,
+                            title: `Take the ${transit.line.short_name} train from ${transit.departure_stop.name}`
+                        });
+                        console.log('Departure stop set:', transit.departure_stop.location);
+                    }
+
+                    // Place the train icon at the arrival stop of each transit step
+                    if (transit.arrival_stop && transit.arrival_stop.location) {
+                        const endMarker = new google.maps.Marker({
+                            position: transit.arrival_stop.location,
+                            map: map,
+                            icon: trainIcon,
+                            title: `Arrive at ${transit.arrival_stop.name}`
+                        });
+                        console.log('Arrival stop set:', transit.arrival_stop.location);
+                    }
                 }
             });
-        } else {
-            alert("Please enter both a starting point and an ending point.");
         }
-    }
-    
+        function drawColoredLines(result) {
+            const steps = result.routes[0].legs[0].steps;
+
+            steps.forEach((step, index) => {
+                if (step.transit) {
+                    const transit = step.transit;
+                    const lineColor = transit.line.color || '#000000';  // Transit line color or default
+                    const lineShortName = transit.line.short_name; // Get the train short name like F, G, etc.
+
+                    // Decode the polyline for the transit step
+                    const path = google.maps.geometry.encoding.decodePath(step.polyline.points);
+
+                    // Draw the polyline for the transit segment (train)
+                    const transitLine = new google.maps.Polyline({
+                        path: path,
+                        geodesic: true,
+                        strokeColor: lineColor,
+                        strokeOpacity: 1.0,
+                        strokeWeight: 5,
+                        zIndex: 2
+                    });
+
+                    transitLine.setMap(map);
+                    polylines.push(transitLine);
+
+                    // Add markers with the train line name (like F, L, etc.)
+                    const trainIconMarker = {
+                        url: `https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/${lineShortName}_train.svg/120px-${lineShortName}_train.svg.png`, // Path to train icon
+                        scaledSize: new google.maps.Size(32, 32) // Resize the icon to fit
+                    };
+
+                    // Add marker at the departure stop with the train line icon
+                    const startMarker = new google.maps.Marker({
+                        position: transit.departure_stop.location,
+                        map: map,
+                        icon: trainIconMarker,
+                        title: `Take the ${lineShortName} train from ${transit.departure_stop.name}`,
+                        zIndex: 999 // Set a high z-index so it appears on top
+                    });
+
+                    console.log('Train departure stop:', transit.departure_stop.location); // Log departure stop location
+
+                    // Optionally, add marker at the arrival stop with the train line icon
+                    const endMarker = new google.maps.Marker({
+                        position: transit.arrival_stop.location,
+                        map: map,
+                        icon: trainIconMarker,
+                        title: `Arrive at ${transit.arrival_stop.name} using ${lineShortName}`,
+                        zIndex: 999 // Set a high z-index so it appears on top
+                    });
+
+                    console.log('Train arrival stop:', transit.arrival_stop.location); // Log arrival stop location
+
+                } else if (step.travel_mode === "WALKING") {
+                    // Decode the polyline for the walking step
+                    const walkingPath = google.maps.geometry.encoding.decodePath(step.polyline.points);
+
+                    // Draw the polyline for the walking segment
+                    const walkingLine = new google.maps.Polyline({
+                        path: walkingPath,
+                        geodesic: true,
+                        strokeColor: "#000000",  // Walking paths are usually black/gray
+                        strokeOpacity: 0.6,
+                        strokeWeight: 3,
+                        zIndex: 1
+                    });
+
+                    walkingLine.setMap(map);
+                    polylines.push(walkingLine);  // Store the polyline for future removal
+                }
+            });
+        }
+        
+        function clearPolylines() {
+            for (let i = 0; i < polylines.length; i++) {
+                polylines[i].setMap(null);  // Remove the polyline from the map
+            }
+            polylines = [];  // Reset the polyline array
+        }
+
+        function highlightStations(result) {
+            const steps = result.routes[0].legs[0].steps;
+
+            steps.forEach((step) => {
+                if (step.transit) {
+                    const transit = step.transit;
+                    const departureStop = transit.departure_stop;
+                    const arrivalStop = transit.arrival_stop;
+                    const lineColor = transit.line.color || '#000000'; // Subway line color or default
+
+                    // Highlight departure station with marker
+                    new google.maps.Marker({
+                        position: departureStop.location,
+                        map: map,
+                        label: 'D',
+                        title: `Departure: ${departureStop.name}`,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 10,
+                            fillColor: lineColor,
+                            fillOpacity: 1,
+                            strokeColor: '#ffffff',
+                            strokeWeight: 2
+                        }
+                    });
+
+                    // Highlight arrival station with marker
+                    new google.maps.Marker({
+                        position: arrivalStop.location,
+                        map: map,
+                        label: 'A',
+                        title: `Arrival: ${arrivalStop.name}`,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 10,
+                            fillColor: lineColor,
+                            fillOpacity: 1,
+                            strokeColor: '#ffffff',
+                            strokeWeight: 2
+                        }
+                    });
+                }
+            });
+        }
+
         function displayRouteSteps(result) {
             const directionsList = document.getElementById('directions-list');
-            directionsList.innerHTML = ''; // Clear previous directions
-    
-            // Extract and display each step in the route
+            directionsList.innerHTML = '';  // Clear previous directions
+
             const steps = result.routes[0].legs[0].steps;
-            for (let i = 0; i < steps.length; i++) {
-                const step = steps[i];
+            steps.forEach((step) => {
                 const listItem = document.createElement('li');
-                listItem.innerHTML = `${step.instructions} - ${step.distance.text}`;
+                
+                if (step.transit) {
+                    const transit = step.transit;
+                    const lineName = transit.line.short_name || transit.line.name;
+                    const lineColor = transit.line.color;
+                    const departureStop = transit.departure_stop.name;
+                    const arrivalStop = transit.arrival_stop.name;
+                    const headsign = transit.headsign;
+                    const vehicleType = transit.line.vehicle.type === 'BUS' ? 'Bus' : 'Train';
+
+                    // Add transportation type (train or bus) to the route steps
+                    listItem.innerHTML = `
+                        Take the <span style="color:${lineColor}; font-weight: bold;">${lineName}</span> 
+                        ${vehicleType.toLowerCase()} from <strong>${departureStop}</strong> to <strong>${arrivalStop}</strong>. 
+                        Follow signs for ${headsign}.`;
+                } else {
+                    // Display walking or other instructions
+                    listItem.innerHTML = `${step.instructions} - ${step.distance.text}`;
+                }
+                
                 directionsList.appendChild(listItem);
-            }
+            });
         }
     </script>
 </body>
