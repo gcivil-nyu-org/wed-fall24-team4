@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station Details</title>
+</head>
+<body>
+    <h1>Station Details</h1>
+    <ul>
+            <li>
+                <h2>{{ station.stop_name }}</h2>
+                <p>GTFS Stop ID: {{ station.gtfs_stop_id }}</p>
+                <p>Station ID: {{ station.station_id }}</p>
+                <p>Complex ID: {{ station.complex_id }}</p>
+                <p>Division: {{ station.division }}</p>
+                <p>Line: {{ station.line }}</p>
+                <p>Borough: {{ station.borough }}</p>
+                <p>CBD: {{ station.cbd }}</p>
+                <p>Daytime Routes: {{ station.daytime_routes }}</p>
+                <p>Structure: {{ station.structure }}</p>
+                <p>Latitude: {{ station.gtfs_latitude }}</p>
+                <p>Longitude: {{ station.gtfs_longitude }}</p>
+                <p>North Direction Label: {{ station.north_direction_label }}</p>
+                <p>South Direction Label: {{ station.south_direction_label }}</p>
+                <p>ADA Accessible: {{ station.ada }}</p>
+                <p>ADA Northbound: {{ station.ada_northbound }}</p>
+                <p>ADA Southbound: {{ station.ada_southbound }}</p>
+                <p>Georeference Latitude: {{ station.georeference_latitude }}</p>
+                <p>Georeference Longitude: {{ station.georeference_longitude }}</p>
+                <p>ADA Notes: {{ station.ada_notes }}</p>
+                <p>Computed Region YAMH 8V7K: {{ station.computed_region_yamh_8v7k }}</p>
+                <p>Computed Region WBG7 3WHC: {{ station.computed_region_wbg7_3whc }}</p>
+                <p>Computed Region KJDX G34T: {{ station.computed_region_kjdx_g34t }}</p>
+            </li>
+    </ul>
+
+
+</body>
+</html>
