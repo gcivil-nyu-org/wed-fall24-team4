@@ -7,37 +7,59 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Station',
+            name="Station",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('gtfs_stop_id', models.CharField(max_length=10)),
-                ('station_id', models.IntegerField()),
-                ('complex_id', models.IntegerField()),
-                ('division', models.CharField(max_length=10)),
-                ('line', models.CharField(max_length=50)),
-                ('stop_name', models.CharField(max_length=255)),
-                ('borough', models.CharField(max_length=2)),
-                ('cbd', models.BooleanField()),
-                ('daytime_routes', models.CharField(max_length=20)),
-                ('structure', models.CharField(max_length=50)),
-                ('gtfs_latitude', models.FloatField()),
-                ('gtfs_longitude', models.FloatField()),
-                ('north_direction_label', models.CharField(blank=True, max_length=255, null=True)),
-                ('south_direction_label', models.CharField(blank=True, max_length=255, null=True)),
-                ('ada', models.BooleanField()),
-                ('ada_northbound', models.BooleanField()),
-                ('ada_southbound', models.BooleanField()),
-                ('georeference_latitude', models.FloatField()),
-                ('georeference_longitude', models.FloatField()),
-                ('ada_notes', models.TextField(blank=True, null=True)),
-                ('computed_region_yamh_8v7k', models.CharField(blank=True, max_length=10, null=True)),
-                ('computed_region_wbg7_3whc', models.CharField(blank=True, max_length=10, null=True)),
-                ('computed_region_kjdx_g34t', models.CharField(blank=True, max_length=10, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("gtfs_stop_id", models.CharField(max_length=10)),
+                ("station_id", models.IntegerField()),
+                ("complex_id", models.IntegerField()),
+                ("division", models.CharField(max_length=10)),
+                ("line", models.CharField(max_length=50)),
+                ("stop_name", models.CharField(max_length=255)),
+                ("borough", models.CharField(max_length=2)),
+                ("cbd", models.BooleanField()),
+                ("daytime_routes", models.CharField(max_length=20)),
+                ("structure", models.CharField(max_length=50)),
+                ("gtfs_latitude", models.FloatField()),
+                ("gtfs_longitude", models.FloatField()),
+                (
+                    "north_direction_label",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "south_direction_label",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("ada", models.BooleanField()),
+                ("ada_northbound", models.BooleanField()),
+                ("ada_southbound", models.BooleanField()),
+                ("georeference_latitude", models.FloatField()),
+                ("georeference_longitude", models.FloatField()),
+                ("ada_notes", models.TextField(blank=True, null=True)),
+                (
+                    "computed_region_yamh_8v7k",
+                    models.CharField(blank=True, max_length=10, null=True),
+                ),
+                (
+                    "computed_region_wbg7_3whc",
+                    models.CharField(blank=True, max_length=10, null=True),
+                ),
+                (
+                    "computed_region_kjdx_g34t",
+                    models.CharField(blank=True, max_length=10, null=True),
+                ),
             ],
         ),
     ]

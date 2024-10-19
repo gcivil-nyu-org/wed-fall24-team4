@@ -1,3 +1,6 @@
 from django.test import TestCase
 
-# Create your tests here.
+
+class DummyViewTest(TestCase):
+    def test_dummy_code(self):
+        self.assertEqual(200, 200)
