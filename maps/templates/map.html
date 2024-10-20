@@ -4,7 +4,7 @@
 <head>
     <suptitle>Welcome to StepFreeMTA!</suptitle>
     <title>Google Map Route Finder</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
     <style>
         /* Map and Steps container */
         #map-container {
@@ -57,15 +57,6 @@
             margin-right: 5px;
         }
 
-        /* Blue dot for user location */
-        .user-location-dot {
-            background-color: #4285F4; /* Google blue */
-            border: 2px solid white;
-            border-radius: 50%;
-            height: 15px;
-            width: 15px;
-        }
-
         /* Route steps list styling */
         ul#directions-list {
             list-style-type: none;
@@ -111,6 +102,7 @@
         <input type="text" id="end" placeholder="Enter destination">
         
         <button onclick="findRoute()">Find Route</button>
+        <button onclick="findNearbyStations()">Find Nearby Subway Stations</button>
     </div>
 
     <!-- Map container and route steps side by side -->
@@ -126,8 +118,9 @@
     </div>
 
     <script>
-        let map, directionsService, directionsRenderer, currentLocationMarker, blueDotMarker;
+        let map, directionsService, directionsRenderer, placesService, currentLocationMarker, blueDotMarker;
         let polylines = []; // Array to store polylines
+        let nearbyStationMarkers = []; // Array to store nearby subway station markers
 
         // Color map for NYC subway lines
         const subwayLineColors = {
@@ -167,6 +160,9 @@
                 draggable: false,
                 polylineOptions: {strokeColor: '#000000', strokeOpacity: 0.1, strokeWeight: 5}
             });
+
+            // Initialize PlacesService
+            placesService = new google.maps.places.PlacesService(map);
 
             // Try to get the user's current location on map load
             if (navigator.geolocation) {
@@ -242,6 +238,51 @@
             }
         }
 
+        // Find nearby subway stations within a 2-mile radius (approximately 3.2 km)
+        function findNearbyStations() {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by this browser.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                const userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                // Search for nearby subway stations within a 2-mile radius
+                const request = {
+                    location: userLocation,
+                    radius: 3200, // 2 miles in meters
+                    type: ['subway_station']
+                };
+
+                placesService.nearbySearch(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        clearNearbyMarkers(); // Clear any existing subway markers
+                        results.forEach(place => {
+                            const stationMarker = new google.maps.Marker({
+                                position: place.geometry.location,
+                                map: map,
+                                icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png',
+                                title: place.name
+                            });
+                            nearbyStationMarkers.push(stationMarker);
+                        });
+                    } else {
+                        alert("No nearby subway stations found.");
+                    }
+                });
+            });
+        }
+
+        // Clear nearby station markers
+        function clearNearbyMarkers() {
+            nearbyStationMarkers.forEach(marker => marker.setMap(null));
+            nearbyStationMarkers = [];
+        }
+
         function findRoute() {
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
@@ -258,6 +299,8 @@
                     travelMode: 'TRANSIT',
                     transitOptions: { modes: ['SUBWAY'] } // Filter for subways
                 };
+
+                clearNearbyMarkers(); // Clear nearby subway stations
 
                 clearPolylines(); // Clear previous lines
 
