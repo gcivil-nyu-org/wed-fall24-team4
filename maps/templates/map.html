@@ -4,13 +4,33 @@
 <head>
     <suptitle>Welcome to StepFreeMTA!</suptitle>
     <title>Google Map Route Finder</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
     <style>
-        #map {
-            height: 500px;
-            width: 100%;
+        /* Map and Steps container */
+        #map-container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh; /* Make it take full viewport height */
         }
 
+        /* Map styling */
+        #map {
+            flex-grow: 1; /* Make map take the remaining space */
+            width: 70%; /* 70% of the total width */
+            height: 100vh; /* Make the map cover the full height of the page */
+        }
+
+        /* Styling for the left section containing route steps */
+        #route-steps {
+            width: 30%;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            height: 100vh; /* Full height of the viewport */
+        }
+
+        /* Styling for the controls */
         #controls {
             margin-bottom: 10px;
             display: flex;
@@ -24,6 +44,7 @@
             align-items: center;
             margin-bottom: 10px;
         }
+
         .train-icon {
             display: inline-block;
             width: 30px;
@@ -34,6 +55,17 @@
             font-weight: bold;
             color: white;
             margin-right: 5px;
+        }
+
+        /* Route steps list styling */
+        ul#directions-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul#directions-list li {
+            margin-bottom: 10px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -70,18 +102,25 @@
         <input type="text" id="end" placeholder="Enter destination">
         
         <button onclick="findRoute()">Find Route</button>
+        <button onclick="findNearbyStations()">Find Nearby Subway Stations</button>
     </div>
 
-    <!-- Map container -->
-    <div id="map"></div>
+    <!-- Map container and route steps side by side -->
+    <div id="map-container">
+        <!-- Directions List on the left -->
+        <div id="route-steps">
+            <h3>Route Steps</h3>
+            <ul id="directions-list"></ul>
+        </div>
 
-    <!-- Directions List -->
-    <h3>Route Steps</h3>
-    <ul id="directions-list"></ul>
+        <!-- Map on the right -->
+        <div id="map"></div>
+    </div>
 
     <script>
-        let map, directionsService, directionsRenderer, currentLocationMarker;
+        let map, directionsService, directionsRenderer, placesService, currentLocationMarker, blueDotMarker;
         let polylines = []; // Array to store polylines
+        let nearbyStationMarkers = []; // Array to store nearby subway station markers
 
         // Color map for NYC subway lines
         const subwayLineColors = {
@@ -108,10 +147,9 @@
         };
         
         function initMap() {
-            const location = { lat: 40.7128, lng: -74.0060 }; // New York City
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
-                center: location
+                center: { lat: 40.7128, lng: -74.0060 }, // Default to New York City
             });
 
             directionsService = new google.maps.DirectionsService();
@@ -122,6 +160,42 @@
                 draggable: false,
                 polylineOptions: {strokeColor: '#000000', strokeOpacity: 0.1, strokeWeight: 5}
             });
+
+            // Initialize PlacesService
+            placesService = new google.maps.places.PlacesService(map);
+
+            // Try to get the user's current location on map load
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        // Center map on user's location
+                        map.setCenter(userLocation);
+
+                        // Add a small blue dot to represent user's location
+                        blueDotMarker = new google.maps.Marker({
+                            position: userLocation,
+                            map: map,
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 8,
+                                fillColor: '#4285F4',  // Google blue color
+                                fillOpacity: 1,
+                                strokeColor: '#ffffff', // White border
+                                strokeWeight: 2
+                            },
+                            title: "You are here"
+                        });
+                    },
+                    (error) => {
+                        alert("Error fetching current location: " + error.message);
+                    }
+                );
+            }
         }
 
         function useCurrentLocation() {
@@ -139,6 +213,7 @@
                             currentLocationMarker.setMap(null);
                         }
 
+                        // Place a new marker for current location
                         currentLocationMarker = new google.maps.Marker({
                             position: currentLocation,
                             map: map,
@@ -163,17 +238,69 @@
             }
         }
 
+        // Find nearby subway stations within a 2-mile radius (approximately 3.2 km)
+        function findNearbyStations() {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by this browser.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                const userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                // Search for nearby subway stations within a 2-mile radius
+                const request = {
+                    location: userLocation,
+                    radius: 3200, // 2 miles in meters
+                    type: ['subway_station']
+                };
+
+                placesService.nearbySearch(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        clearNearbyMarkers(); // Clear any existing subway markers
+                        results.forEach(place => {
+                            const stationMarker = new google.maps.Marker({
+                                position: place.geometry.location,
+                                map: map,
+                                icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png',
+                                title: place.name
+                            });
+                            nearbyStationMarkers.push(stationMarker);
+                        });
+                    } else {
+                        alert("No nearby subway stations found.");
+                    }
+                });
+            });
+        }
+
+        // Clear nearby station markers
+        function clearNearbyMarkers() {
+            nearbyStationMarkers.forEach(marker => marker.setMap(null));
+            nearbyStationMarkers = [];
+        }
+
         function findRoute() {
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
 
             if (start && end) {
+                // Remove current location marker before adding new markers
+                if (currentLocationMarker) {
+                    currentLocationMarker.setMap(null); // Remove pin point for the current location
+                }
+
                 const request = {
                     origin: start,
                     destination: end,
                     travelMode: 'TRANSIT',
                     transitOptions: { modes: ['SUBWAY'] } // Filter for subways
                 };
+
+                clearNearbyMarkers(); // Clear nearby subway stations
 
                 clearPolylines(); // Clear previous lines
 

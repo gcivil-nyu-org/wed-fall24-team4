@@ -1,3 +1,6 @@
+[![Build Status](https://app.travis-ci.com/gcivil-nyu-org/wed-fall24-team4.svg?token=jwUNqiGUzS6Hs3vuhjTX&branch=develop)](https://app.travis-ci.com/github/gcivil-nyu-org/wed-fall24-team4)
+[![Coverage Status](https://coveralls.io/repos/github/gcivil-nyu-org/wed-fall24-team4/badge.svg?branch=develop)](https://coveralls.io/github/gcivil-nyu-org/wed-fall24-team4?branch=develop)
+
 ### Usage
 
 1. **Set up your local environment:**
