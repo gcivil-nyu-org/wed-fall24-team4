@@ -1,13 +1,11 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.views import generic
 from django.db.models import F
-from django.urls import reverse
-from django.http import HttpResponseRedirect
-
 from .models import Station
+
 
 # home view
 def home_view(request):
@@ -59,13 +57,15 @@ def logout_view(request):
         messages.success(request, "You have successfully logged out.")
         return redirect("maps:map_view")
 
+
 # Stations View
 class StationsView(generic.ListView):
     model = Station
     template_name = "app/stations.html"
 
     def get_queryset(self):
-        return Station.objects.all().order_by(F('stop_name').asc())
+        return Station.objects.all().order_by(F("stop_name").asc())
+
 
 # Station Detail View
 class StationDetailView(generic.DetailView):
