@@ -2,9 +2,12 @@
 <html>
     {% load static %}
 <head>
+    <suptitle>Welcome to StepFreeMTA!</suptitle>
     <title>Google Map Route Finder</title>
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
+
     <link rel="stylesheet" type="text/css" href="{% static 'app/map.css' %}">
+
 </head>
 
 <body>
