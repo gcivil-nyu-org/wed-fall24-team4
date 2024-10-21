@@ -239,7 +239,7 @@
         }
 
         // Find nearby subway stations within a 2-mile radius (approximately 3.2 km)
-        function findNearbyStations() {
+        function findNearbyStations() { // Using Places API (part of Maps Javascript API library), so the actual data of the subway stations (e.g., names, locations) is provided and maintained by Google in their own Places database.
             if (!navigator.geolocation) {
                 alert("Geolocation is not supported by this browser.");
                 return;
@@ -258,7 +258,7 @@
                     type: ['subway_station']
                 };
 
-                placesService.nearbySearch(request, (results, status) => {
+                placesService.nearbySearch(request, (results, status) => { 
                     if (status === google.maps.places.PlacesServiceStatus.OK) {
                         clearNearbyMarkers(); // Clear any existing subway markers
                         results.forEach(place => {
