@@ -1,0 +1,104 @@
+/* General styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Container styling */
+form {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 400px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Heading styling */
+h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Form input styling */
+form p {
+    margin-bottom: 15px;
+    font-size: 1rem;
+    color: #555;
+}
+
+input[type="text"], input[type="email"], input[type="password"], select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+/* Submit button styling */
+button[type="submit"], button[name="login"] {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 15px;
+}
+
+button[type="submit"]:hover, button[name="login"]:hover {
+    background-color: #0056b3;
+}
+
+/* Login link styling */
+label {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+a {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    form {
+        width: 100%;
+        padding: 15px;
+    }
+
+    h2 {
+        font-size: 1.6rem;
+    }
+
+    button[type="submit"], button[name="login"] {
+        font-size: 0.9rem;
+    }
+}

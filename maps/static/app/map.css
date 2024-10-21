@@ -1,0 +1,246 @@
+
+
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Navigation bar styling */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    padding: 10px 20px;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+nav h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: white;
+}
+
+nav div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+ nav button {
+    background-color: #fff;
+    color: #007bff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}
+#logout{
+    background-color: #b23b3b;
+    color: white;
+}
+nav button:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+nav form {
+    margin: 0;
+}
+
+/* Control panel styling */
+#controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    gap: 10px;
+}
+
+#controls label {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #333;
+}
+
+#controls input {
+    padding: 8px;
+    width: 200px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+}
+
+#controls button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#controls button:hover {
+    background-color: #0056b3;
+}
+
+/* Map and Steps container */
+#map-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh; /* Make it take full viewport height */
+}
+
+/* Map styling */
+#map {
+    flex-grow: 1; /* Make map take the remaining space */
+    width: 70%; /* 70% of the total width */
+    height: 100vh; /* Make the map cover the full height of the page */
+}
+
+/* Styling for the left section containing route steps */
+#route-steps {
+    width: 30%;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    height: 100vh; /* Full height of the viewport */
+}
+
+/* Styling for the controls */
+#controls {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+
+.train-icon {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+    color: white;
+    margin-right: 5px;
+}
+
+/* Route steps list styling */
+ul#directions-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul#directions-list li {
+    margin-bottom: 10px;
+    font-size: 14px;
+    /* Map and Steps container */
+
+#map-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh; /* Make it take full viewport height */
+}
+
+/* Map styling */
+#map {
+    flex-grow: 1; /* Make map take the remaining space */
+    width: 70%; /* 70% of the total width */
+    height: 100vh; /* Make the map cover the full height of the page */
+}
+
+/* Styling for the left section containing route steps */
+#route-steps {
+    width: 30%;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    height: 100vh; /* Full height of the viewport */
+}
+
+/* Styling for the controls */
+#controls {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.train-icon {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+    color: white;
+    margin-right: 5px;
+}
+
+/* Route steps list styling */
+ul#directions-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul#directions-list li {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #333;
+}
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #map-container {
+        flex-direction: column;
+    }
+
+    #map {
+        width: 100%;
+        height: 50vh; /* Adjust height for mobile view */
+    }
+
+    #route-steps {
+        width: 100%;
+        height: 50vh;
+    }
+
+    nav h3 {
+        font-size: 1.2rem;
+    }
+
+    #controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

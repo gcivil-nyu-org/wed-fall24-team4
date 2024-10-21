@@ -1,0 +1,61 @@
+ /* Map and Steps container */
+ #map-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh; /* Make it take full viewport height */
+}
+
+/* Map styling */
+#map {
+    flex-grow: 1; /* Make map take the remaining space */
+    width: 70%; /* 70% of the total width */
+    height: 100vh; /* Make the map cover the full height of the page */
+}
+
+/* Styling for the left section containing route steps */
+#route-steps {
+    width: 30%;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    height: 100vh; /* Full height of the viewport */
+}
+
+/* Styling for the controls */
+#controls {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.train-icon {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+    color: white;
+    margin-right: 5px;
+}
+
+/* Route steps list styling */
+ul#directions-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul#directions-list li {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
