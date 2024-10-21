@@ -38,6 +38,17 @@
             gap: 10px;
         }
 
+        /* Slider styling */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-label {
+            font-size: 14px;
+        }
+
         nav {
             display: flex;
             justify-content: space-between;
@@ -102,6 +113,12 @@
         <input type="text" id="end" placeholder="Enter destination">
         
         <button onclick="findRoute()">Find Route</button>
+
+        <div class="slider-container">
+            <label for="radius-slider" class="slider-label">Radius: <span id="radius-value">2</span> miles</label>
+            <input type="range" id="radius-slider" min="0.5" max="5" step="0.1" value="2" oninput="updateRadiusLabel()">
+        </div>
+        
         <button onclick="findNearbyStations()">Find Nearby Subway Stations</button>
     </div>
 
@@ -145,7 +162,7 @@
             'J': '#996633',   // Brown
             'Z': '#996633',   // Brown
         };
-        
+
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
@@ -238,7 +255,7 @@
             }
         }
 
-        // Find nearby subway stations within a 2-mile radius (approximately 3.2 km)
+        // Find nearby subway stations within a user-selected radius
         function findNearbyStations() {
             if (!navigator.geolocation) {
                 alert("Geolocation is not supported by this browser.");
@@ -251,10 +268,13 @@
                     lng: position.coords.longitude
                 };
 
-                // Search for nearby subway stations within a 2-mile radius
+                // Get the selected radius from the slider
+                const radius = parseFloat(document.getElementById('radius-slider').value) * 1609.34; // Convert miles to meters
+
+                // Search for nearby subway stations within the selected radius
                 const request = {
                     location: userLocation,
-                    radius: 3200, // 2 miles in meters
+                    radius: radius, // User-selected radius
                     type: ['subway_station']
                 };
 
@@ -281,6 +301,12 @@
         function clearNearbyMarkers() {
             nearbyStationMarkers.forEach(marker => marker.setMap(null));
             nearbyStationMarkers = [];
+        }
+
+        // Update the label showing the radius in miles
+        function updateRadiusLabel() {
+            const radius = document.getElementById('radius-slider').value;
+            document.getElementById('radius-value').innerText = radius;
         }
 
         function findRoute() {
