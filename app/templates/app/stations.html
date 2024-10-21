@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station Details</title>
+</head>
+<body>
+    <h1>Stations</h1>
+
+    {% if station_list %}
+        <ul>
+        {% for s in station_list %}
+            <li><a href="{% url 'app:station_detail' s.id %}">{{ s.stop_name }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No stations are available.</p>
+    {% endif %}
+
+</body>
+</html>
