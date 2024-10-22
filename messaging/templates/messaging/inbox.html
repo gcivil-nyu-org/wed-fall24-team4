@@ -1,1 +1,61 @@
-<a href="{% url 'maps:map_view' %}"><button>Home</button></a>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        .message-left {
+            text-align: left;
+        }
+
+        .message-right {
+            text-align: right;
+        }
+
+        .conversation-tab {
+            border: 1px solid black;
+            margin: 10 auto;
+            padding: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="{% url 'maps:map_view' %}"><button>Home</button></a>
+
+    <h1>Search Users</h1>
+    <form method="get" action="">
+        {{ form.as_p }}
+        <button type="submit">Search</button>
+    </form>
+
+    <h1>Direct Messaging:</h1>
+
+    {% for messaging_partner in start_conversations %}
+    <a href="{% url 'messaging:direct_messaging' messaging_partner_name=messaging_partner %}">
+        <div class="conversation-tab">
+            <p>
+                <strong>{{messaging_partner}}</strong> <br>
+                Start Conversation
+            </p>
+        </div>
+    </a>
+    {% endfor %}
+
+    {% for messaging_partner, conversation in conversation_history.items %}
+    <a href="{% url 'messaging:direct_messaging' messaging_partner_name=messaging_partner %}">
+        <div class="conversation-tab">
+            <p>
+                <strong>{{messaging_partner}}</strong> <br>
+                {% if conversation.sender == user.username %}
+                You: {{conversation.content}} <br>
+                {% else %}
+                Them: {{conversation.content}} <br>
+                {% endif %}
+                ({{ conversation.timestamp }})
+            </p>
+        </div>
+    </a>
+    {% endfor %}
+</body>
+
+</html>

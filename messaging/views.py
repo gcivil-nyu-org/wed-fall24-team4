@@ -6,11 +6,40 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from .forms import UserSearchForm
 
 
 @login_required
 def inbox(request):
-    return render(request, "messaging/inbox.html", {})
+    form = UserSearchForm(request.GET or None)
+    requested_users = None
+    users_searched = False
+    if form.is_valid():
+        query = form.cleaned_data.get('query')
+        if query:
+            requested_users = User.objects.filter(username__icontains=query).values_list("username",flat=True)
+            users_searched = True
+
+    conversation_history = {}
+    messages_history = Message.objects.filter( Q(sender=request.user) | Q(recipient=request.user)).order_by("timestamp")
+    
+    for message in messages_history:
+        messaging_partner = (message.sender.username + message.recipient.username).replace(request.user.username,"")
+        if users_searched and messaging_partner not in requested_users:
+            continue
+        conversation_history[messaging_partner] = {
+            "sender": message.sender.username,
+            "recipient": message.recipient.username,
+            "content": message.content,
+            "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        
+    start_conversations = []
+    if users_searched:  
+        for username in requested_users:
+            if username != request.user.username and username not in conversation_history:
+                start_conversations.append(username)
+    return render(request, "messaging/inbox.html", {'form': form,"conversation_history":conversation_history,"start_conversations":start_conversations})
 
 
 @login_required
