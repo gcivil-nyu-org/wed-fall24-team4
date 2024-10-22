@@ -19,8 +19,8 @@
 
 4. **Run the following commands:**
    ```bash
-   python manage.py migrate
-   python manage.py makemigrations app
+   python manage.py makemigrations app maps messaging
+   python manage.py migrate 
    ```
     Then:
     ```bash
