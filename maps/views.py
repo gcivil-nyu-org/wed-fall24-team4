@@ -42,6 +42,4 @@ def map_view(request):
         except Exception as e:
             context["error"] = str(e)
 
-    print("context", context)
-
     return render(request, "map.html", context)
