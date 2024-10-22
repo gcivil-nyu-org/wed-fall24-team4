@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function fetchMessages() {
+            $.get("{% url 'messaging:get_new_messages' messaging_partner_name=messaging_partner%}", function (data) {
+                let messagesContainer = $('#messages-container');
+                messagesContainer.empty();
+                data.messages.forEach(function (message) {
+                    let className = message.sender === '{{ user.username }}' ? 'message-right' : 'message-left';
+                    messagesContainer.append(
+                        `<div class=${className}>
+                            <p>
+                                <strong>${message.sender}</strong> <br>
+                                ${message.content} <br>
+                                (${message.timestamp})
+                            </p>
+                        </div>`
+                    ); 
+                });
+                if(messagesContainer.children().length === 0 ){
+                    messagesContainer.append(`<p>No messages to show.</p>`);
+                }
+            });
+
+            document.get
+        }
+
+        $(document).ready(function () {
+            fetchMessages();
+            setInterval(fetchMessages, 1000); // Fetch messages every 1 seconds
+
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                const content = $('textarea[name="content"]').val();
+                if (content) {
+                    $.ajax({
+                        type: 'POST',
+                        url: "{% url 'messaging:send_message' recipient_username=messaging_partner %}",
+                        data: {
+                            'content': content,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.status === 'Message sent') {
+                                $('textarea[name="content"]').val('');
+                                fetchMessages();
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    <style>
+        .message-left {
+            text-align: left;
+        }
+
+        .message-right {
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="{% url 'messaging:inbox' %}"><button>Inbox</button></a>
+    <div id="messages-container">
+        {% for message in messages %}
+        <div class="{% if message.sender == user %}
+                        message-right
+                    {% else %}
+                        message-left
+                    {% endif %}">
+            <p>
+                <strong>{{ message.sender.username }}</strong> <br>
+                {{ message.content }} <br>
+                ({{ message.timestamp }})
+            </p>
+        </div>
+        {% empty %}
+            <p>No messages to show.</p>
+        {% endfor %}
+    </div>
+
+    <h1>Send Message</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="content" rows="2"></textarea><br>
+        <button type="submit">Send</button>
+    </form>
+</body>
+
+</html>
