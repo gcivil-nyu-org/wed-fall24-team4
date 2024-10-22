@@ -27,6 +27,7 @@
             <a href="#"><button>Notifications</button></a>
             <a href="{% url 'app:login' %}"><button>Login</button></a>
             <a href="{% url 'app:register' %}"><button>Register</button></a>
+            <a href="{% url 'app:stations' %}"><button>Subway</button></a>
         </div>
         {% endif %}
     </nav>
@@ -164,7 +165,7 @@
         // Function to center map, place marker on the selected station, and find nearby stations
         function centerMapOnStation(lat, lng, stationName) {
             const stationLocation = { lat: lat, lng: lng };
-
+            startLocation = stationLocation;
             // Center map on station
             map.setCenter(stationLocation);
 
