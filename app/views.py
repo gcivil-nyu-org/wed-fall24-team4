@@ -57,9 +57,20 @@ def logout_view(request):
 class StationsView(generic.ListView):
     model = Station
     template_name = "app/stations.html"
+    context_object_name = "station_list"  # To reference the object in your template
 
     def get_queryset(self):
-        return Station.objects.all().order_by(F("stop_name").asc())
+        # Get the search query from the request (GET parameter)
+        query = self.request.GET.get("q")
+
+        # If there's a search query, filter stations based on the name
+        if query:
+            return Station.objects.filter(stop_name__icontains=query).order_by(
+                F("stop_name").asc()
+            )
+        else:
+            # Otherwise, return all stations ordered by name
+            return Station.objects.all().order_by(F("stop_name").asc())
 
 
 # Station Detail View
