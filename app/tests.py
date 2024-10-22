@@ -9,19 +9,25 @@ class LoginViewTest(TestCase):
         self.url = reverse("app:login")
         self.user = User.objects.create_user(username="testuser", password="password")
 
-    def test_login_view_get(self):  # accessed via a GET request, check status code is 200 and correct template (app/login.html) is used # noqa: E501
+    def test_login_view_get(
+        self,
+    ):  # accessed via a GET request, check status code is 200 and correct template (app/login.html) is used # noqa: E501
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "app/login.html")
 
-    def test_login_view_post_success(self):  # It asserts that the response redirects the user to the map view upon successful login # noqa: E501
+    def test_login_view_post_success(
+        self,
+    ):  # It asserts that the response redirects the user to the map view upon successful login # noqa: E501
         response = self.client.post(
             self.url, {"username": "testuser", "password": "password"}
         )
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("maps:map_view"))
 
-    def test_login_view_post_failure(self):  # simulates a login attempt with incorrect credentials via a POST request, asserts that the page reloads (status code 200) and checks for the presence of the error message # noqa: E501
+    def test_login_view_post_failure(
+        self,
+    ):  # simulates a login attempt with incorrect credentials via a POST request, asserts that the page reloads (status code 200) and checks for the presence of the error message # noqa: E501
         response = self.client.post(
             self.url, {"username": "wronguser", "password": "wrongpassword"}
         )
