@@ -38,7 +38,7 @@ class LoginViewTest(TestCase):
 
 class RegisterViewTest(TestCase):
     def setUp(self):
-        self.url = reverse("app:register")
+        self.url = reverse("app:register") 
 
     def test_register_view_get(
         self,
@@ -79,7 +79,7 @@ class RegisterViewTest(TestCase):
 
 class StationsViewTest(TestCase):
     def setUp(self):
-        # Create a sample Station object with all required fields filled
+        # Create a sample Station object with all required fields filled.
         self.station = Station.objects.create(
             gtfs_stop_id="R01",
             station_id=1,
