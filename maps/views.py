@@ -8,6 +8,13 @@ def map_view(request):
         "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
     }
 
+    lat = request.GET.get("lat")
+    lng = request.GET.get("lng")
+    station_name = request.GET.get("name")
+
+    if lat and lng and station_name:
+        context.update({"lat": lat, "lng": lng, "station_name": station_name})
+
     if request.method == "POST":
         start = request.POST.get("start")
         end = request.POST.get("end")
@@ -34,5 +41,7 @@ def map_view(request):
 
         except Exception as e:
             context["error"] = str(e)
+
+    print("context", context)
 
     return render(request, "map.html", context)

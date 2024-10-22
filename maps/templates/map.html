@@ -5,6 +5,7 @@
     <title>Google Map Route Finder</title>
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
 
+
     <link rel="stylesheet" type="text/css" href="{% static 'maps/map.css' %}">
 
 </head>
@@ -41,6 +42,12 @@
         <input type="text" id="end" placeholder="Enter destination">
         
         <button onclick="findRoute()">Find Route</button>
+
+        <div class="slider-container">
+            <label for="radius-slider" class="slider-label">Radius: <span id="radius-value">2</span> miles</label>
+            <input type="range" id="radius-slider" min="0.5" max="5" step="0.1" value="2" oninput="updateRadiusLabel()">
+        </div>
+        
         <button onclick="findNearbyStations()">Find Nearby Subway Stations</button>
     </div>
 
@@ -84,12 +91,18 @@
             'J': '#996633',   // Brown
             'Z': '#996633',   // Brown
         };
-        
+
+        let selectedStationMarker = null;
+
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
                 center: { lat: 40.7128, lng: -74.0060 }, // Default to New York City
             });
+
+            const stationLat = parseFloat("{{ lat }}");
+            const stationLng = parseFloat("{{ lng }}");
+            const stationName = "{{ station_name }}";
 
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({
@@ -103,38 +116,68 @@
             // Initialize PlacesService
             placesService = new google.maps.places.PlacesService(map);
 
-            // Try to get the user's current location on map load
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-
-                        // Center map on user's location
-                        map.setCenter(userLocation);
-
-                        // Add a small blue dot to represent user's location
-                        blueDotMarker = new google.maps.Marker({
-                            position: userLocation,
-                            map: map,
-                            icon: {
-                                path: google.maps.SymbolPath.CIRCLE,
-                                scale: 8,
-                                fillColor: '#4285F4',  // Google blue color
-                                fillOpacity: 1,
-                                strokeColor: '#ffffff', // White border
-                                strokeWeight: 2
-                            },
-                            title: "You are here"
-                        });
-                    },
-                    (error) => {
-                        alert("Error fetching current location: " + error.message);
-                    }
-                );
+            if (stationLat && stationLng) {
+                document.getElementById("start").value = stationName;
+                centerMapOnStation(stationLat, stationLng, stationName, map);
             }
+
+            else{
+                // Try to get the user's current location on map load
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const userLocation = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+
+                            // Center map on user's location
+                            map.setCenter(userLocation);
+
+                            // Add a small blue dot to represent user's location
+                            blueDotMarker = new google.maps.Marker({
+                                position: userLocation,
+                                map: map,
+                                icon: {
+                                    path: google.maps.SymbolPath.CIRCLE,
+                                    scale: 8,
+                                    fillColor: '#4285F4',  // Google blue color
+                                    fillOpacity: 1,
+                                    strokeColor: '#ffffff', // White border
+                                    strokeWeight: 2
+                                },
+                                title: "You are here"
+                            });
+                        },
+                        (error) => {
+                            alert("Error fetching current location: " + error.message);
+                        }
+                    );
+                }
+            }
+
+        }
+
+        // Function to center map, place marker on the selected station, and find nearby stations
+        function centerMapOnStation(lat, lng, stationName) {
+            const stationLocation = { lat: lat, lng: lng };
+
+            // Center map on station
+            map.setCenter(stationLocation);
+
+            // Add a marker on the station
+            if (selectedStationMarker) {
+                selectedStationMarker.setMap(null); // Remove previous marker
+            }
+
+            selectedStationMarker = new google.maps.Marker({
+                position: stationLocation,
+                map: map,
+                title: stationName || "Selected Station",
+            });
+
+            // Find nearby stations
+            findNearbyStations(stationLocation);
         }
 
         function useCurrentLocation() {
@@ -177,42 +220,56 @@
             }
         }
 
-        // Find nearby subway stations within a 2-mile radius (approximately 3.2 km)
-        function findNearbyStations() {
-            if (!navigator.geolocation) {
-                alert("Geolocation is not supported by this browser.");
-                return;
-            }
+        // Find nearby subway stations within a user-selected radius
+        function findNearbyStations(stationLocation = null) {
+            if(!stationLocation) {  
+                if (!navigator.geolocation) {
+                    alert("Geolocation is not supported by this browser.");
+                    return;
+                }
 
-            navigator.geolocation.getCurrentPosition((position) => {
-                const userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-
-                // Search for nearby subway stations within a 2-mile radius
-                const request = {
-                    location: userLocation,
-                    radius: 3200, // 2 miles in meters
-                    type: ['subway_station']
-                };
-
-                placesService.nearbySearch(request, (results, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        clearNearbyMarkers(); // Clear any existing subway markers
-                        results.forEach(place => {
-                            const stationMarker = new google.maps.Marker({
-                                position: place.geometry.location,
-                                map: map,
-                                icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png',
-                                title: place.name
-                            });
-                            nearbyStationMarkers.push(stationMarker);
-                        });
-                    } else {
-                        alert("No nearby subway stations found.");
-                    }
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                searchNearbyStations(userLocation);
+                }, (error) => {
+                    alert("Error fetching current location: " + error.message);
                 });
+            } 
+            else {
+                searchNearbyStations(stationLocation);
+            }
+        }
+
+        function searchNearbyStations(location) {
+
+            // Get the selected radius from the slider
+            const radius = parseFloat(document.getElementById('radius-slider').value) * 1609.34; // Convert miles to meters
+
+            // Search for nearby subway stations within the selected radius
+            const request = {
+                location: location,
+                radius: radius, // User-selected radius
+                type: ['subway_station']
+            };
+
+            placesService.nearbySearch(request, (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    clearNearbyMarkers(); // Clear any existing subway markers
+                    results.forEach(place => {
+                        const stationMarker = new google.maps.Marker({
+                            position: place.geometry.location,
+                            map: map,
+                            icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png',
+                            title: place.name
+                        });
+                        nearbyStationMarkers.push(stationMarker);
+                    });
+                } else {
+                    alert("No nearby subway stations found.");
+                }
             });
         }
 
@@ -220,6 +277,12 @@
         function clearNearbyMarkers() {
             nearbyStationMarkers.forEach(marker => marker.setMap(null));
             nearbyStationMarkers = [];
+        }
+
+        // Update the label showing the radius in miles
+        function updateRadiusLabel() {
+            const radius = document.getElementById('radius-slider').value;
+            document.getElementById('radius-value').innerText = radius;
         }
 
         function findRoute() {
