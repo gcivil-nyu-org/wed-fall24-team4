@@ -5,7 +5,6 @@
     <title>Google Map Route Finder</title>
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
 
-
     <link rel="stylesheet" type="text/css" href="{% static 'maps/map.css' %}">
 
 </head>
@@ -35,20 +34,24 @@
     <!-- Input fields and button for user input -->
     <div id="controls">
         <label for="start">Starting Point:</label>
-        <input type="text" id="start" placeholder="Enter starting location">
+        <input type="text" id="start" placeholder="Enter starting location" onchange="resetStartLocation()">
         <button onclick="useCurrentLocation()">Use Current Location</button>
 
         <label for="end">Ending Point:</label>
-        <input type="text" id="end" placeholder="Enter destination">
+        <input type="text" id="end" placeholder="Enter destination" onchange="resetEndLocation()">
         
         <button onclick="findRoute()">Find Route</button>
 
+        <!-- Slider Container with Fixed Width for Radius Value -->
         <div class="slider-container">
-            <label for="radius-slider" class="slider-label">Radius: <span id="radius-value">2</span> miles</label>
+            <label for="radius-slider" class="slider-label">
+                Radius: <span id="radius-value" style="display: inline-block; width: 30px; text-align: right;">2.0</span> miles
+            </label>
             <input type="range" id="radius-slider" min="0.5" max="5" step="0.1" value="2" oninput="updateRadiusLabel()">
         </div>
         
-        <button onclick="findNearbyStations()">Find Nearby Subway Stations</button>
+        <!-- Toggle Nearby Stations Button -->
+        <button id="toggle-stations-button" onclick="toggleNearbyStations()">Show Nearby Subway Stations</button>
     </div>
 
     <!-- Map container and route steps side by side -->
@@ -67,6 +70,9 @@
         let map, directionsService, directionsRenderer, placesService, currentLocationMarker, blueDotMarker;
         let polylines = []; // Array to store polylines
         let nearbyStationMarkers = []; // Array to store nearby subway station markers
+        let stationsVisible = false; // Tracks visibility of subway stations
+        let startLocation = null; // To store starting point coordinates
+        let endLocation = null;   // To store ending point coordinates
 
         // Color map for NYC subway lines
         const subwayLineColors = {
@@ -119,9 +125,7 @@
             if (stationLat && stationLng) {
                 document.getElementById("start").value = stationName;
                 centerMapOnStation(stationLat, stationLng, stationName, map);
-            }
-
-            else{
+            } else {
                 // Try to get the user's current location on map load
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
@@ -155,7 +159,6 @@
                     );
                 }
             }
-
         }
 
         // Function to center map, place marker on the selected station, and find nearby stations
@@ -202,6 +205,8 @@
                             title: "You are here"
                         });
 
+                        startLocation = currentLocation; // Store coordinates
+
                         const geocoder = new google.maps.Geocoder();
                         geocoder.geocode({ location: currentLocation }, (results, status) => {
                             if (status === "OK" && results[0]) {
@@ -220,30 +225,35 @@
             }
         }
 
+        // Toggle function for nearby subway stations
+        function toggleNearbyStations() {
+            const button = document.getElementById('toggle-stations-button');
+            if (!stationsVisible) {
+                // Show nearby stations
+                findNearbyStations();
+                stationsVisible = true;
+                button.innerText = 'Hide Nearby Subway Stations';
+            } else {
+                // Hide nearby stations
+                clearNearbyMarkers();
+                stationsVisible = false;
+                button.innerText = 'Show Nearby Subway Stations';
+            }
+        }
+
         // Find nearby subway stations within a user-selected radius
         function findNearbyStations(stationLocation = null) {
-            if(!stationLocation) {  
-                if (!navigator.geolocation) {
-                    alert("Geolocation is not supported by this browser.");
-                    return;
-                }
-
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const userLocation = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-                searchNearbyStations(userLocation);
-                }, (error) => {
-                    alert("Error fetching current location: " + error.message);
-                });
-            } 
-            else {
+            if (!stationLocation) {  
+                const center = map.getCenter();
+                searchNearbyStations(center);
+            } else {
                 searchNearbyStations(stationLocation);
             }
         }
 
         function searchNearbyStations(location) {
+            // Clear any existing subway markers
+            clearNearbyMarkers();
 
             // Get the selected radius from the slider
             const radius = parseFloat(document.getElementById('radius-slider').value) * 1609.34; // Convert miles to meters
@@ -257,7 +267,6 @@
 
             placesService.nearbySearch(request, (results, status) => {
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    clearNearbyMarkers(); // Clear any existing subway markers
                     results.forEach(place => {
                         const stationMarker = new google.maps.Marker({
                             position: place.geometry.location,
@@ -265,6 +274,22 @@
                             icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png',
                             title: place.name
                         });
+
+                        // Add click event listener to the marker
+                        stationMarker.addListener('click', function() {
+                            // Set the ending point input field to the station's name
+                            document.getElementById('end').value = place.name;
+
+                            // Store the station's coordinates
+                            endLocation = place.geometry.location;
+
+                            // Optional: Provide feedback to the user
+                            alert(`Ending point set to: ${place.name}`);
+
+                            // Optional: Center map on the clicked station
+                            // map.panTo(place.geometry.location);
+                        });
+
                         nearbyStationMarkers.push(stationMarker);
                     });
                 } else {
@@ -281,28 +306,46 @@
 
         // Update the label showing the radius in miles
         function updateRadiusLabel() {
-            const radius = document.getElementById('radius-slider').value;
-            document.getElementById('radius-value').innerText = radius;
+            const radius = parseFloat(document.getElementById('radius-slider').value);
+            document.getElementById('radius-value').innerText = radius.toFixed(1);
+        }
+
+        function resetStartLocation() {
+            startLocation = null;
+        }
+
+        function resetEndLocation() {
+            endLocation = null;
         }
 
         function findRoute() {
-            const start = document.getElementById('start').value;
-            const end = document.getElementById('end').value;
+            const startInput = document.getElementById('start').value;
+            const endInput = document.getElementById('end').value;
 
-            if (start && end) {
+            let origin = startInput;
+            let destination = endInput;
+
+            // Use stored coordinates if available
+            if (startLocation) {
+                origin = startLocation;
+            }
+
+            if (endLocation) {
+                destination = endLocation;
+            }
+
+            if (origin && destination) {
                 // Remove current location marker before adding new markers
                 if (currentLocationMarker) {
                     currentLocationMarker.setMap(null); // Remove pin point for the current location
                 }
 
                 const request = {
-                    origin: start,
-                    destination: end,
+                    origin: origin,
+                    destination: destination,
                     travelMode: 'TRANSIT',
                     transitOptions: { modes: ['SUBWAY'] } // Filter for subways
                 };
-
-                clearNearbyMarkers(); // Clear nearby subway stations
 
                 clearPolylines(); // Clear previous lines
 
