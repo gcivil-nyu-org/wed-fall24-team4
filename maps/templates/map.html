@@ -86,14 +86,14 @@
         <h3>Find a Route on Google Maps</h3>
         {% if user.is_authenticated %}
         <h3>Hi, {{user.username}}</h3>
-        <form method="POST" action="{% url 'app:logout' %}">
-            {% csrf_token %}
-            <div>
-                <a href="#"><button>Messages</button></a>
-                <a href="#"><button>Notifications</button></a>
+        <div>
+            <a href="{% url 'messaging:inbox' %}"><button>Messages</button></a>
+            <a href="#"><button>Notifications</button></a>
+            <form method="POST" action="{% url 'app:logout' %}">
+                {% csrf_token %}
                 <button type="submit">Logout</button>
-            </div>
-        </form>
+            </form>
+        </div>
         {% else %}
         <div>
             <a href="#"><button>Notifications</button></a>
