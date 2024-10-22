@@ -72,7 +72,7 @@
     <a href="{% url 'messaging:inbox' %}"><button>Inbox</button></a>
     <div id="messages-container">
         {% for message in messages %}
-        <div class="{% if message.sender == user %}
+        <div class="{% if message.sender == user.username %}
                         message-right
                     {% else %}
                         message-left
