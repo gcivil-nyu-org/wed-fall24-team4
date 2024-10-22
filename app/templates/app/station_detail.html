@@ -65,7 +65,8 @@
     
     
     <a href="{% url 'app:stations' %}">Back</a>
-    <a href="{% url 'maps:map_view' %}">Go</a>
+    <a href="{% url 'maps:map_view' %}?lat={{ station.gtfs_latitude }}&lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Go</a>
+
     
 
 
