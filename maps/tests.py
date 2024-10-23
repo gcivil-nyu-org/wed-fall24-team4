@@ -108,7 +108,7 @@ class ButtonsTest(TestCase):
     def test_login_button_exists(self):
         # Checks that login button exists on map page
         response = self.client.get(self.url)
-        self.assertContains(response, '<a href="{% url 'app:login' %}"><button>Login</button></a>', html=True)  # Check if the button is in the page
+        self.assertContains(response, '<button>Login</button>', html=True)  # Check if the button is in the page
 
     def test_login_button_redirect(self):
         # Checks that pressing login button redirects to login screen
