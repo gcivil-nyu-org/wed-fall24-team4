@@ -144,7 +144,7 @@ class ButtonsTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)  # Ensure the page loads correctly
 
-        # Simulate POST request to the registration view with a stronger password
+        # Simulate POST request to the registration view with stronger password
         response = self.client.post(
             self.register_url,
             {
