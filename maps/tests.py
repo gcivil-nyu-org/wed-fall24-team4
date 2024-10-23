@@ -138,9 +138,21 @@ class ButtonsTest(TestCase):
         self.assertContains(response, '<button>Register</button>', html=True)  # Check if register button is on page
 
     def test_register_button_redirects(self):
+        # Simulate pressing the register button
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)  # Ensure the page loads correctly
 
-        reponse = self.client.post(self.register_url, {"username": "testuser", "password": "password"})
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('maps:map_view'))
+        # Simulate POST request to the registration view with a stronger password
+        response = self.client.post(self.register_url, {
+            "username": "newuser",
+            "password1": "Str0ngP@ssw0rd123",  # Use a stronger password
+            "password2": "Str0ngP@ssw0rd123",  # Matching password
+        })
+
+        # Check if the form has errors
+        if response.context and 'form' in response.context:
+            print(response.context['form'].errors)
+
+        # Test if the response correctly redirects to the map view
+        self.assertEqual(response.status_code, 302)  # Expecting a redirection status code
+        self.assertRedirects(response, reverse("maps:map_view"))  # Ensure it redirects correctly
