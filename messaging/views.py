@@ -28,9 +28,10 @@ def inbox(request):
     ).order_by("timestamp")
 
     for message in messages_history:
-        messaging_partner = (
-            message.sender.username + message.recipient.username
-        ).replace(request.user.username, "")
+        if message.sender.username == request.user.username:
+            messaging_partner = message.recipient.username
+        else:
+            messaging_partner = message.sender.username
         if users_searched and messaging_partner not in requested_users:
             continue
         conversation_history[messaging_partner] = {
