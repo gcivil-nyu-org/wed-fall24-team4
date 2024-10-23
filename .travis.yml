@@ -11,7 +11,7 @@ before_script:
 script:
   - black --check .
   - flake8 .
-  - coverage run --source=stepfreemta,app,maps manage.py test
+  - coverage run --source=stepfreemta,app,maps,messaging manage.py test
   - echo "Deploying..."
 after_script:
   - echo "Finished deploying!"
