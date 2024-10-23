@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch
 from django.conf import settings
+from django.contrib.auth.models import User
 
 
 class MapsViewTests(TestCase):
@@ -104,7 +105,10 @@ class ButtonsTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.url = reverse("maps:map_view")
-        
+        self.login_url = reverse("app:login")
+        # Create a user to log in
+        self.user = User.objects.create_user(username="testuser", password="password")
+
     def test_login_button_exists(self):
         # Checks that login button exists on map page
         response = self.client.get(self.url)
@@ -113,7 +117,9 @@ class ButtonsTest(TestCase):
     def test_login_button_redirect(self):
         # Checks that pressing login button redirects to login screen
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200) # Ensure page loads correctly
-        response = self.client.post(reverse('app:login'))
+        self.assertEqual(response.status_code, 200)  # Ensure map page loads correctly
+
+        # Simulate logging in by posting credentials to the login view
+        response = self.client.post(self.login_url, {'username': 'testuser', 'password': 'password'})
         self.assertEqual(response.status_code, 302)  # Redirection status code
-        self.assertRedirects(response, reverse('app:login'))  # Test the correct redirect
+        self.assertRedirects(response, reverse('maps:map_view'))  # Test the correct redirect back to map view
