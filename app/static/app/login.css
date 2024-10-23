@@ -85,6 +85,21 @@ button[name="register"]:hover {
     background-color: #0056b3;
 }
 
+/*Return to Map View */
+button[name="return"] {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
 /* Link label */
 label[for="register"] {
     display: block;

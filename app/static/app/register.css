@@ -49,7 +49,7 @@ input[type="text"], input[type="email"], input[type="password"], select {
 }
 
 /* Submit button styling */
-button[type="submit"], button[name="login"] {
+button[type="submit"], button[name="login"], button[name="return"] {
     width: 100%;
     background-color: #007bff;
     color: white;
@@ -62,7 +62,7 @@ button[type="submit"], button[name="login"] {
     margin-top: 15px;
 }
 
-button[type="submit"]:hover, button[name="login"]:hover {
+button[type="submit"]:hover, button[name="login"]:hover, button[name="return"]:hover {
     background-color: #0056b3;
 }
 

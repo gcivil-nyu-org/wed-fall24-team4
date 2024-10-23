@@ -13,6 +13,10 @@
   <label for="register">Create Account:</label>
   <a href="{% url 'app:register' %}"><button name="register">Register</button></a>
 
+  
+  <label for="return">Return to Map View</label>
+  <a href="{% url 'maps:map_view' %}"><button name="return">Return</button></a>
+
   <!-- {% if messages %}
     <ul>
       {% for message in messages %}

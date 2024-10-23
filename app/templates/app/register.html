@@ -12,6 +12,9 @@
   <label for="login">Already have an account?</label>
   <a href="{% url 'app:login' %}"><button name="login">Login</button></a>
 
+  <label for="return">Return to Map View</label>
+  <a href="{% url 'maps:map_view' %}"><button name="return to map">Return</button></a>
+
   <!-- {% if messages %}
     <ul>
       {% for message in messages %}
