@@ -101,6 +101,10 @@ class MapsViewTests(TestCase):
         )
         
 class ButtonsTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("maps:map_view")
+        
     def test_login_button_exists(self):
         # Checks that login button exists on map page
         response = self.client.get(self.url)
