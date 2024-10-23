@@ -17,6 +17,7 @@
         <div>
             <a href="{% url 'messaging:inbox' %}"><button>Messages</button></a>
             <a href="#"><button>Notifications</button></a>
+            <a href="{% url 'app:stations' %}"><button>Subway</button></a>
             <form method="POST" action="{% url 'app:logout' %}">
                 {% csrf_token %}
                 <button type="submit">Logout</button>
