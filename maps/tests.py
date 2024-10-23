@@ -99,7 +99,7 @@ class MapsViewTests(TestCase):
         self.assertEqual(
             response.context["google_maps_api_key"], settings.GOOGLE_MAPS_API_KEY
         )
-        
+
 class ButtonsTest(TestCase):
     def setUp(self):
         self.client = Client()
@@ -108,7 +108,7 @@ class ButtonsTest(TestCase):
     def test_login_button_exists(self):
         # Checks that login button exists on map page
         response = self.client.get(self.url)
-        self.assertContains(response, '<button type="submit<button>Login</button>', html=True)  # Check if the button is in the page
+        self.assertContains(response, '<a href="{% url 'app:login' %}"><button>Login</button></a>', html=True)  # Check if the button is in the page
 
     def test_login_button_redirect(self):
         # Checks that pressing login button redirects to login screen
