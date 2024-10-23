@@ -101,6 +101,7 @@ class MapsViewTests(TestCase):
             response.context["google_maps_api_key"], settings.GOOGLE_MAPS_API_KEY
         )
 
+
 class ButtonsTest(TestCase):
     def setUp(self):
         self.client = Client()
@@ -112,7 +113,9 @@ class ButtonsTest(TestCase):
     def test_login_button_exists(self):
         # Checks that login button exists on map page
         response = self.client.get(self.url)
-        self.assertContains(response, '<button>Login</button>', html=True)  # Check if the button is in the page
+        self.assertContains(
+            response, "<button>Login</button>", html=True
+        )  # Check if the button is in the page # noqa: E501
 
     def test_login_button_redirect(self):
         # Checks that pressing login button redirects to login screen
@@ -120,6 +123,10 @@ class ButtonsTest(TestCase):
         self.assertEqual(response.status_code, 200)  # Ensure map page loads correctly
 
         # Simulate logging in by posting credentials to the login view
-        response = self.client.post(self.login_url, {'username': 'testuser', 'password': 'password'})
+        response = self.client.post(
+            self.login_url, {"username": "testuser", "password": "password"}
+        )  # noqa: E501
         self.assertEqual(response.status_code, 302)  # Redirection status code
-        self.assertRedirects(response, reverse('maps:map_view'))  # Test the correct redirect back to map view
+        self.assertRedirects(
+            response, reverse("maps:map_view")
+        )  # Test the correct redirect back to map view # noqa: E501
