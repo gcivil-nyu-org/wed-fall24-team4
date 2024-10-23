@@ -7,6 +7,8 @@
 </head>
 <body>
     <h1>Stations</h1>
+    <label for="return">Return to Map View</label>
+    <a href="{% url 'maps:map_view' %}"><button name="return">Return</button></a>
 
     <form method="GET" action="">
         <input type="text" name="q" placeholder="Search for a station" value="{{ request.GET.q }}">
