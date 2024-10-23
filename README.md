@@ -1,5 +1,5 @@
-[![Build Status](https://app.travis-ci.com/gcivil-nyu-org/wed-fall24-team4.svg?token=jwUNqiGUzS6Hs3vuhjTX&branch=develop)](https://app.travis-ci.com/github/gcivil-nyu-org/wed-fall24-team4)
-[![Coverage Status](https://coveralls.io/repos/github/gcivil-nyu-org/wed-fall24-team4/badge.svg?branch=develop)](https://coveralls.io/github/gcivil-nyu-org/wed-fall24-team4?branch=develop)
+[![Build Status](https://app.travis-ci.com/gcivil-nyu-org/wed-fall24-team4.svg?token=jwUNqiGUzS6Hs3vuhjTX&branch=dev-will)](https://app.travis-ci.com/github/gcivil-nyu-org/wed-fall24-team4)
+[![Coverage Status](https://coveralls.io/repos/github/gcivil-nyu-org/wed-fall24-team4/badge.svg?branch=dev-will)](https://coveralls.io/github/gcivil-nyu-org/wed-fall24-team4?branch=dev-will)
 
 ### Usage
 
@@ -12,7 +12,7 @@
 
 2. **Enable Required APIs in Google Cloud Console:**
    - Go to the [Google Cloud Console](https://console.cloud.google.com/).
-   - Enable the **Geolocation API** and **Geocoding API** for your project.
+   - Enable the **Geolocation API**, **Maps JavaScript API**, **Directions API**, **Geocoding API** and **Places API** for your project.
 
 3. **Enable Billing:**
    - Ensure billing is enabled in your Google Cloud project. Certain Google Maps services, like the Geocoding API, require billing to be activated to avoid errors like `REQUEST_DENIED`.
