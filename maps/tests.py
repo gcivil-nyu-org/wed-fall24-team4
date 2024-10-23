@@ -134,7 +134,7 @@ class ButtonsTest(TestCase):
     def test_register_button_exists(self):
         # Checks register button exists
         response = self.client.get(self.url)
-        self.assertContains(response, '<button>Register</button>, html=True)  # Check if register button is on page
+        self.assertContains(response, '<button>Register</button>', html=True)  # Check if register button is on page
 
     def test_register_button_redirects(self):
         response = self.client.get(self.url)
