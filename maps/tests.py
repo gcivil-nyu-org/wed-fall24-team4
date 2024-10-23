@@ -140,6 +140,6 @@ class ButtonsTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
-        reponse = self.client.post(self.register_url, {'username: 'testuser', 'password': 'password'})
+        reponse = self.client.post(self.register_url, {"username": "testuser", "password": "password"})
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('maps:map_view'))
