@@ -130,3 +130,16 @@ class ButtonsTest(TestCase):
         self.assertRedirects(
             response, reverse("maps:map_view")
         )  # Test the correct redirect back to map view # noqa: E501
+
+    def test_register_button_exists(self):
+        # Checks register button exists
+        response = self.client.get(self.url)
+        self.assertContains(response, '<button>Register</button>, html=True)  # Check if register button is on page
+
+    def test_register_button_redirects(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+        reponse = self.client.post(self.register_url, {'username: 'testuser', 'password': 'password'})
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('maps:map_view'))
