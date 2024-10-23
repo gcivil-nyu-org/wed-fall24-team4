@@ -107,6 +107,7 @@ class ButtonsTest(TestCase):
         self.client = Client()
         self.url = reverse("maps:map_view")
         self.login_url = reverse("app:login")
+        self.register_url = reverse("app:register")
         # Create a user to log in
         self.user = User.objects.create_user(username="testuser", password="password")
 
