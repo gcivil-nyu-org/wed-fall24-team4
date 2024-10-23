@@ -164,6 +164,3 @@ cython_debug/
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
-
-# database 
-db.sqlite3
