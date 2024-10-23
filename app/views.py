@@ -7,11 +7,6 @@ from django.db.models import F
 from .models import Station
 
 
-# home view
-def home_view(request):
-    return render(request, "app/home.html", {})
-
-
 # User Registration View
 def register_view(request):
     if request.method == "POST":
