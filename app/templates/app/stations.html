@@ -13,6 +13,16 @@
     <form method="GET" action="">
         <input type="text" name="q" placeholder="Search for a station" value="{{ request.GET.q }}">
         <button type="submit">Search</button>
+
+        <!-- Add a dropdown to filter by ADA accessibility -->
+        <label for="ada_filter">Filter by Accessibility:</label>
+        <select name="ada_filter" id="ada_filter">
+            <option value="">All Stations</option>
+            <option value="fully" {% if request.GET.ada_filter == 'fully' %}selected{% endif %}>Fully Accessible</option>
+            <option value="partially" {% if request.GET.ada_filter == 'partially' %}selected{% endif %}>Partially Accessible</option>
+            <option value="not" {% if request.GET.ada_filter == 'not' %}selected{% endif %}>Not Accessible</option>
+        </select>
+        <button type="submit">Apply Filter</button>
     </form>
 
     {% if station_list %}
