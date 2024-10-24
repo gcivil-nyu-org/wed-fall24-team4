@@ -6,6 +6,7 @@ from django.views import generic
 from django.db.models import F
 from .models import Station
 
+
 # User Registration View
 def register_view(request):
     if request.method == "POST":
@@ -13,7 +14,9 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, f"Account created successfully! Welcome, {user.username}!")
+            messages.success(
+                request, f"Account created successfully! Welcome, {user.username}!"
+            )
             return redirect("maps:map_view")
         else:
             messages.error(request, "Registration failed. Please try again.")
@@ -30,7 +33,9 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            messages.success(request, f"Welcome, {user.username}! You are now logged in.")
+            messages.success(
+                request, f"Welcome, {user.username}! You are now logged in."
+            )
             return redirect("maps:map_view")
         else:
             messages.error(request, "Invalid username or password.")
@@ -67,11 +72,11 @@ class StationsView(generic.ListView):
             queryset = queryset.filter(stop_name__icontains=query)
 
         # Apply ADA filter based on the selected option
-        if ada_filter == 'fully':
+        if ada_filter == "fully":
             queryset = queryset.filter(ada=True)
-        elif ada_filter == 'partially':
-            queryset = queryset.filter(ada_southbound=True, ada_northbound=False)  # or however "partially accessible" is defined
-        elif ada_filter == 'not':
+        elif ada_filter == "partially":
+            queryset = queryset.filter(ada_southbound=True, ada_northbound=False)
+        elif ada_filter == "not":
             queryset = queryset.filter(ada=False)
 
         return queryset
