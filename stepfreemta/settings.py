@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "maps",
     "app",
     "messaging",
+    "notifications",
 ]
 
 MIDDLEWARE = [

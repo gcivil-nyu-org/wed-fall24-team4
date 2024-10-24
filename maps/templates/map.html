@@ -16,7 +16,7 @@
         <h3>Hi, {{user.username}}</h3>
         <div>
             <a href="{% url 'messaging:inbox' %}"><button>Messages</button></a>
-            <a href="#"><button>Notifications</button></a>
+            <a href="{% url 'notifications:inbox' %}"><button>Notifications</button></a>
             <a href="{% url 'app:stations' %}"><button>Subway</button></a>
             <form method="POST" action="{% url 'app:logout' %}">
                 {% csrf_token %}
@@ -25,7 +25,7 @@
         </div>
         {% else %}
         <div>
-            <a href="#"><button>Notifications</button></a>
+            <a href="{% url 'notifications:inbox' %}"><button>Notifications</button></a>
             <a href="{% url 'app:login' %}"><button>Login</button></a>
             <a href="{% url 'app:register' %}"><button>Register</button></a>
             <a href="{% url 'app:stations' %}"><button>Subway</button></a>
