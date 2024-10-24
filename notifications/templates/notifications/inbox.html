@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function fetchNotifications() {
+            $.get("{% url 'notifications:get_notifications' %}", function (data) {
+                let notificationsContainer = $('#notifications-container');
+                notificationsContainer.empty();
+                data.notifications.forEach(function (notification) {
+                    notificationsContainer.append(
+                        `<div>
+                            <p>
+                                ${notification.content} <br>
+                                (${notification.timestamp})
+                            </p>
+                        </div>`
+                    ); 
+                });
+                if(notificationsContainer.children().length === 0 ){
+                    notificationsContainer.append(`<p>No notifications to show.</p>`);
+                }
+            });
+
+            document.get
+        }
+
+        $(document).ready(function () {
+            fetchNotifications();
+            setInterval(fetchNotifications, 1000); // Fetch notifications every 1 seconds
+        });
+    </script>
+</head>
+<body>
+    <a href="{% url 'maps:map_view' %}"><button>Home</button></a>
+    <h1>Notifications</h1>
+    <div id="notifications-container">
+    </div>
+    
+</body>
+
+
+</html>
