@@ -86,7 +86,7 @@
 
 
     <script>
-        let map, directionsService, directionsRenderer, placesService, currentLocationMarker, blueDotMarker;
+        let map, directionsService, placesService, currentLocationMarker, blueDotMarker;
         let polylines = []; // Array to store polylines
         let nearbyStationMarkers = []; // Array to store nearby subway station markers
         let stationsVisible = false; // Tracks visibility of subway stations
@@ -162,13 +162,7 @@
             const stationName = "{{ station_name }}";
 
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({
-                map: map,
-                suppressPolylines: false, // Do not suppress default polylines
-                suppressMarkers: false,
-                draggable: false,
-                polylineOptions: {strokeColor: '#000000', strokeOpacity: 0.1, strokeWeight: 5}
-            });
+
 
             // Initialize PlacesService
             placesService = new google.maps.places.PlacesService(map);
@@ -444,8 +438,6 @@
             let origin = startLocation || startInput;
             let destination = endLocation || endInput;
 
-            console.log("Starting route from:", origin, "to:", destination); // Log start and destination
-
             if (origin && destination) {
                 // Geocode addresses to coordinates if needed
                 if (typeof origin === "string" || typeof destination === "string") {
@@ -468,8 +460,6 @@
                             lat: results[0].geometry.location.lat(),
                             lng: results[0].geometry.location.lng()
                         };
-                        console.log("Geocoded origin:", origin);
-
                         if (typeof destination !== "string") {
                             findAccessibleStationsAndRoute(origin, destination);
                         }
@@ -486,7 +476,6 @@
                             lat: results[0].geometry.location.lat(),
                             lng: results[0].geometry.location.lng()
                         };
-                        console.log("Geocoded destination:", destination);
 
                         // Proceed only when both origin and destination are fully defined
                         if (origin && typeof origin !== "string") {
@@ -500,8 +489,6 @@
         }
 
         function findAccessibleStationsAndRoute(origin, destination) {
-            console.log("Finding accessible stations for:", origin, destination);
-
             // Check for valid origin and destination coordinates
             if (!origin || typeof origin.lat !== "number" || typeof origin.lng !== "number") {
                 console.error("Error: Invalid origin coordinates.");
@@ -512,46 +499,45 @@
                 return;
             }
 
-            // Find nearest accessible stations to origin and destination
+            // Find the nearest accessible station to the origin
             const nearestStartStation = findNearestStation(origin);
             const nearestEndStation = findNearestStation(destination);
-
-            console.log("Nearest accessible station to start:", nearestStartStation);
-            console.log("Nearest accessible station to end:", nearestEndStation);
 
             if (!nearestStartStation || !nearestEndStation) {
                 console.error("No accessible stations found near start or end.");
                 return;
             }
 
-            routeWithSegments(origin, nearestStartStation, nearestEndStation, destination);
+            // Pass the nearest accessible station as the start station directly to the route function
+            routeDirectlyWithNearestStation(origin, nearestStartStation, nearestEndStation, destination);
         }
 
-        function routeWithSegments(origin, startStation, endStation, destination) {
-            // Convert coordinates to LatLng format if necessary
+        function routeDirectlyWithNearestStation(origin, startStation, endStation, destination) {
             const originLatLng = new google.maps.LatLng(origin.lat, origin.lng);
             const startStationLatLng = new google.maps.LatLng(startStation.latitude, startStation.longitude);
             const endStationLatLng = new google.maps.LatLng(endStation.latitude, endStation.longitude);
             const destinationLatLng = new google.maps.LatLng(destination.lat, destination.lng);
 
-            // Create individual renderers for each segment
+            document.getElementById('directions-list').innerHTML = "";
+
+            // Using default Google Maps API styling for paths
             const walkingToStationRenderer = new google.maps.DirectionsRenderer({ 
                 map: map, 
-                suppressMarkers: false,
-                polylineOptions: { strokeColor: '#00bfff' } // Customize color for each segment if desired
+                suppressMarkers: false 
             });
+
             const subwayRenderer = new google.maps.DirectionsRenderer({
                 map: map,
                 suppressMarkers: false,
-                polylineOptions: { strokeColor: '#ff4500' } // Color for subway route
-            });
-            const walkingToDestinationRenderer = new google.maps.DirectionsRenderer({
-                map: map,
-                suppressMarkers: false,
-                polylineOptions: { strokeColor: '#00bfff' } // Color for final walking route
+                polylineOptions: { strokeColor: '#ff4500' } // Optional: color for subway route
             });
 
-            // Step 1: Walk from origin to nearest accessible start station
+            const walkingToDestinationRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: false 
+            });
+
+            // Step 1: Walk from origin to the nearest accessible start station
             directionsService.route({
                 origin: originLatLng,
                 destination: startStationLatLng,
@@ -559,9 +545,9 @@
             }, function(walkToStationResult, status) {
                 if (status === 'OK') {
                     walkingToStationRenderer.setDirections(walkToStationResult);
-                    console.log("Walking route to start station successful:", walkToStationResult);
+                    displayRouteSteps(walkToStationResult, "Walk to Start Station");
 
-                    // Step 2: Transit between accessible stations
+                    // Step 2: Transit directly from the start station to the end station without any additional stops
                     directionsService.route({
                         origin: startStationLatLng,
                         destination: endStationLatLng,
@@ -570,9 +556,9 @@
                     }, function(transitResult, status) {
                         if (status === 'OK') {
                             subwayRenderer.setDirections(transitResult);
-                            console.log("Subway transit route successful:", transitResult);
+                            displayRouteSteps(transitResult, "Subway Route");
 
-                            // Step 3: Walk from nearest accessible end station to final destination
+                            // Step 3: Walk from the nearest accessible end station to the final destination
                             directionsService.route({
                                 origin: endStationLatLng,
                                 destination: destinationLatLng,
@@ -580,7 +566,7 @@
                             }, function(walkToDestinationResult, status) {
                                 if (status === 'OK') {
                                     walkingToDestinationRenderer.setDirections(walkToDestinationResult);
-                                    console.log("Walking route to final destination successful:", walkToDestinationResult);
+                                    displayRouteSteps(walkToDestinationResult, "Walk to Final Destination");
                                 } else {
                                     console.log("Error finding walking route to destination:", status);
                                 }
@@ -595,8 +581,8 @@
             });
         }
 
+
         function findNearestStation(location) {
-            console.log("Finding nearest station for location:", location);
 
             if (!accessibleStations || accessibleStations.length === 0) {
                 console.log("Error: accessibleStations data is not available or empty.");
@@ -607,7 +593,6 @@
             let shortestDistance = Infinity;
 
             accessibleStations.forEach((station) => {
-                console.log("Station data:", station); // Log to see the structure of each station
 
                 const stationLat = parseFloat(station.gtfs_latitude); // Ensure property names match your data
                 const stationLng = parseFloat(station.gtfs_longitude);
@@ -630,43 +615,43 @@
             return nearestStation;
         }
 
-        function drawColoredOverlays(result) {
-            const steps = result.routes[0].legs[0].steps;
+        // function drawColoredOverlays(result) {
+        //     const steps = result.routes[0].legs[0].steps;
 
-            steps.forEach((step) => {
-                if (step.transit) {
-                    const transit = step.transit;
-                    const lineShortName = transit.line.short_name.replace(" Line", "").trim();
-                    const lineColor = subwayLineColors[lineShortName] || '#000000'; // Use color map or default to black
+        //     steps.forEach((step) => {
+        //         if (step.transit) {
+        //             const transit = step.transit;
+        //             const lineShortName = transit.line.short_name.replace(" Line", "").trim();
+        //             const lineColor = subwayLineColors[lineShortName] || '#000000'; // Use color map or default to black
 
-                    const path = google.maps.geometry.encoding.decodePath(step.polyline.points);
+        //             const path = google.maps.geometry.encoding.decodePath(step.polyline.points);
 
-                    // Make the original Google polylines more transparent by overlaying with a nearly transparent line
-                    const transparentLine = new google.maps.Polyline({
-                        path: path,
-                        geodesic: true,
-                        strokeColor: "#000000", // Black (or other neutral color)
-                        strokeOpacity: 0.1,  // Nearly transparent
-                        strokeWeight: 5
-                    });
+        //             // Make the original Google polylines more transparent by overlaying with a nearly transparent line
+        //             const transparentLine = new google.maps.Polyline({
+        //                 path: path,
+        //                 geodesic: true,
+        //                 strokeColor: "#000000", // Black (or other neutral color)
+        //                 strokeOpacity: 0.1,  // Nearly transparent
+        //                 strokeWeight: 5
+        //             });
 
-                    transparentLine.setMap(map);
-                    polylines.push(transparentLine);
+        //             transparentLine.setMap(map);
+        //             polylines.push(transparentLine);
 
-                    // Overlay a slightly wider, more opaque colored line on top
-                    const intensifiedLine = new google.maps.Polyline({
-                        path: path,
-                        geodesic: true,
-                        strokeColor: lineColor,
-                        strokeOpacity: 0.9,  // Higher opacity for subway line color
-                        strokeWeight: 7     // Slightly thicker to stand out
-                    });
+        //             // Overlay a slightly wider, more opaque colored line on top
+        //             const intensifiedLine = new google.maps.Polyline({
+        //                 path: path,
+        //                 geodesic: true,
+        //                 strokeColor: lineColor,
+        //                 strokeOpacity: 0.9,  // Higher opacity for subway line color
+        //                 strokeWeight: 7     // Slightly thicker to stand out
+        //             });
 
-                    intensifiedLine.setMap(map);  // Overlay colored subway line
-                    polylines.push(intensifiedLine);
-                }
-            });
-        }
+        //             intensifiedLine.setMap(map);  // Overlay colored subway line
+        //             polylines.push(intensifiedLine);
+        //         }
+        //     });
+        // }
 
         function clearPolylines() {
             polylines.forEach(polyline => polyline.setMap(null));
@@ -675,23 +660,26 @@
 
         function displayRouteSteps(result, segmentLabel) {
             const directionsList = document.getElementById('directions-list');
+            
+            // Add header for the segment
             const segmentHeader = document.createElement('h4');
             segmentHeader.innerText = segmentLabel;
             directionsList.appendChild(segmentHeader);
 
+            // Iterate over steps in the route leg
             const steps = result.routes[0].legs[0].steps;
             steps.forEach((step) => {
                 const listItem = document.createElement('li');
                 
                 if (step.transit) {
+                    // Display transit details
                     const transit = step.transit;
-                    const lineName = transit.line.short_name.replace(" Line", "").trim();
-                    const lineColor = subwayLineColors[lineName] || '#000000';
-
-                    // Create train icon and display route step with the icon
-                    const trainIcon = `<span class="train-icon" style="background-color:${lineColor};">${lineName}</span>`;
-                    listItem.innerHTML = `${trainIcon} Take the <span style="color:${lineColor}; font-weight: bold;">${lineName}</span> subway from <strong>${transit.departure_stop.name}</strong> to <strong>${transit.arrival_stop.name}</strong>. Follow signs for ${transit.headsign}.`;
+                    const lineName = transit.line.short_name || transit.line.name;
+                    const trimLineName = lineName.replace(" Line", "").trim();
+                    const lineColor = subwayLineColors[trimLineName] || '#000000';
+                    listItem.innerHTML = `<span class="train-icon" style="background-color:${lineColor};">${lineName}</span> Take the ${lineName} subway from <strong>${transit.departure_stop.name}</strong> to <strong>${transit.arrival_stop.name}</strong>. Follow signs for ${transit.headsign}.`;
                 } else {
+                    // Display walking instructions
                     listItem.innerHTML = `${step.instructions} - ${step.distance.text}`;
                 }
                 
