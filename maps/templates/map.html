@@ -534,20 +534,25 @@
             const endStationLatLng = new google.maps.LatLng(endStation.latitude, endStation.longitude);
             const destinationLatLng = new google.maps.LatLng(destination.lat, destination.lng);
 
+            document.getElementById('directions-list').innerHTML = "";
+
             // Create individual renderers for each segment
             const walkingToStationRenderer = new google.maps.DirectionsRenderer({ 
                 map: map, 
                 suppressMarkers: false,
+                preserveViewport: true,
                 polylineOptions: { strokeColor: '#00bfff' } // Customize color for each segment if desired
             });
             const subwayRenderer = new google.maps.DirectionsRenderer({
                 map: map,
                 suppressMarkers: false,
+                preserveViewport: true,
                 polylineOptions: { strokeColor: '#ff4500' } // Color for subway route
             });
             const walkingToDestinationRenderer = new google.maps.DirectionsRenderer({
                 map: map,
                 suppressMarkers: false,
+                preserveViewport: true,
                 polylineOptions: { strokeColor: '#00bfff' } // Color for final walking route
             });
 
@@ -559,7 +564,7 @@
             }, function(walkToStationResult, status) {
                 if (status === 'OK') {
                     walkingToStationRenderer.setDirections(walkToStationResult);
-                    console.log("Walking route to start station successful:", walkToStationResult);
+                    displayRouteSteps(walkToStationResult, "Walk to Start Station");
 
                     // Step 2: Transit between accessible stations
                     directionsService.route({
@@ -570,7 +575,7 @@
                     }, function(transitResult, status) {
                         if (status === 'OK') {
                             subwayRenderer.setDirections(transitResult);
-                            console.log("Subway transit route successful:", transitResult);
+                            displayRouteSteps(transitResult, "Subway Route");
 
                             // Step 3: Walk from nearest accessible end station to final destination
                             directionsService.route({
@@ -580,7 +585,7 @@
                             }, function(walkToDestinationResult, status) {
                                 if (status === 'OK') {
                                     walkingToDestinationRenderer.setDirections(walkToDestinationResult);
-                                    console.log("Walking route to final destination successful:", walkToDestinationResult);
+                                    displayRouteSteps(walkToDestinationResult, "Walk to Final Destination");
                                 } else {
                                     console.log("Error finding walking route to destination:", status);
                                 }
@@ -607,7 +612,6 @@
             let shortestDistance = Infinity;
 
             accessibleStations.forEach((station) => {
-                console.log("Station data:", station); // Log to see the structure of each station
 
                 const stationLat = parseFloat(station.gtfs_latitude); // Ensure property names match your data
                 const stationLng = parseFloat(station.gtfs_longitude);
@@ -618,7 +622,6 @@
                 }
 
                 const distance = calculateDistance(location, { lat: stationLat, lng: stationLng });
-                console.log(`Checking station: ${station.stop_name} at (${stationLat}, ${stationLng}) with distance: ${distance} meters`);
 
                 if (distance < shortestDistance) {
                     shortestDistance = distance;
