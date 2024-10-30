@@ -93,6 +93,7 @@
         let startLocation = null; // To store starting point coordinates
         let endLocation = null;   // To store ending point 
         let showAccessibleOnly = true;
+        let routeMarkers = [];
 
         // Define nearest accessible station data from Django context
         const nearestStationName = "{{ nearest_station_name|escapejs }}";
@@ -432,22 +433,120 @@
         }
 
         function findRoute() {
-            const startInput = document.getElementById('start').value;
-            const endInput = document.getElementById('end').value;
+            const startInput = document.getElementById("start").value;
+            const endInput = document.getElementById("end").value;
 
-            let origin = startLocation || startInput;
-            let destination = endLocation || endInput;
-
-            if (origin && destination) {
-                // Geocode addresses to coordinates if needed
-                if (typeof origin === "string" || typeof destination === "string") {
-                    geocodeAndFindAccessibleStations(origin, destination);
-                } else {
-                    findAccessibleStationsAndRoute(origin, destination);
+            // Fetch geocoded coordinates for start and end locations
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ 'address': startInput }, function (results, status) {
+                if (status === 'OK') {
+                    const startLat = results[0].geometry.location.lat();
+                    const startLng = results[0].geometry.location.lng();
+                    geocoder.geocode({ 'address': endInput }, function (results, status) {
+                        if (status === 'OK') {
+                            const endLat = results[0].geometry.location.lat();
+                            const endLng = results[0].geometry.location.lng();
+                            fetchRoute(startLat, startLng, endLat, endLng);
+                        }
+                    });
                 }
-            } else {
-                console.log("Please enter both a starting point and an ending point.");
+            });
+        }
+
+        async function fetchRoute(startLat, startLng, endLat, endLng) {
+            const url = `/maps?start_lat=${startLat}&start_lng=${startLng}&end_lat=${endLat}&end_lng=${endLng}`;
+            console.log("Requesting route from URL:", url);  // Log the exact URL for debugging
+
+            try {
+                const response = await fetch(url, {
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+
+                if (!response.ok) {
+                    console.error("Network response was not ok:", response.statusText);
+                    return;
+                }
+
+                const data = await response.json();
+                console.log("Route data received:", data);  // Log data to confirm structure
+                displayRoute(data.route_segments);
+            } catch (error) {
+                console.error("Error fetching route:", error);
             }
+        }
+
+        function displayRoute(routeSegments) {
+            console.log("Displaying route with segments:", routeSegments);
+
+            if (!routeSegments || routeSegments.length === 0) {
+                console.error("No route segments found.");
+                return;
+            }
+
+            clearMarkers(); // Clear any existing markers
+
+            routeSegments.forEach((segment, index) => {
+                if (segment.path) {
+                    const linePath = google.maps.geometry.encoding.decodePath(segment.path);
+                    const line = new google.maps.Polyline({
+                        path: linePath,
+                        geodesic: true,
+                        strokeColor: segment.line_color || '#000000',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 5
+                    });
+                    line.setMap(map);
+                    routePolylines.push(line);
+                } else {
+                    console.warn("Skipping segment without path:", segment);
+                }
+
+                if (segment.departure_stop) {
+                    const startMarker = new google.maps.Marker({
+                        position: { lat: segment.departure_stop.lat, lng: segment.departure_stop.lng },
+                        map: map,
+                        title: segment.departure_stop.name,
+                        icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                    });
+                    routeMarkers.push(startMarker);
+                }
+
+                if (segment.arrival_stop) {
+                    const endMarker = new google.maps.Marker({
+                        position: { lat: segment.arrival_stop.lat, lng: segment.arrival_stop.lng },
+                        map: map,
+                        title: segment.arrival_stop.name,
+                        icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                    });
+                    routeMarkers.push(endMarker);
+                }
+            });
+        }
+
+        function drawRouteLines(routeStations) {
+            routeStations.forEach((station, index) => {
+                if (index === 0) return; // Skip the first station as it has no previous station
+
+                const lineColor = subwayLineColors[station.line] || '#000000';  // Default to black if line color is undefined
+
+                const pathSegment = new google.maps.Polyline({
+                    path: [
+                        { lat: parseFloat(routeStations[index - 1].lat), lng: parseFloat(routeStations[index - 1].lng) },
+                        { lat: parseFloat(station.lat), lng: parseFloat(station.lng) }
+                    ],
+                    geodesic: true,
+                    strokeColor: lineColor,
+                    strokeOpacity: 0.7,
+                    strokeWeight: 4
+                });
+                pathSegment.setMap(map);
+                polylines.push(pathSegment); // Store for clearing later
+            });
+        }
+
+        function clearMarkers() {
+            routeMarkers.forEach(marker => marker.setMap(null));
+            routeMarkers = [];
         }
 
         function geocodeAndFindAccessibleStations(origin, destination) {
