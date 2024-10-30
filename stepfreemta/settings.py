@@ -32,7 +32,7 @@ DEBUG = False
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "stepfreemta-env.eba-je3qmwfd.us-west-2.elasticbeanstalk.com",
-    "www.stepfreemta.com",
+    "stepfreemta.com",
 ]
 
 # Application definition
@@ -139,7 +139,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Enable HTTPS
+# Settings to enable HTTPS
 SECURE_SSL_REDIRECTS = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_PRELOAD = True

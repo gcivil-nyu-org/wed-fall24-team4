@@ -28,3 +28,5 @@
     ```
 
 Link to website: [http://stepfreemta-env.eba-je3qmwfd.us-west-2.elasticbeanstalk.com/]
+
+Link to HTTPS site: [https://stepfreemta-env.eba-je3qmwfd.us-west-2.elasticbeanstalk.com/maps/]
