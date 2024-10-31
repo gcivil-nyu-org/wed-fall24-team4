@@ -27,14 +27,14 @@ class MessagingTests(TestCase):
     def test_inbox_view_get(self):
         self.client.force_login(self.user)
         url = reverse("messaging:inbox")
-        response = self.client.get(url)
+        response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "messaging/inbox.html")
 
     def test_inbox_search(self):
         self.client.force_login(self.user)
         url = reverse("messaging:inbox")
-        response = self.client.get(url)
+        response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(
@@ -44,14 +44,14 @@ class MessagingTests(TestCase):
         self.assertEqual(response.context["start_conversations"], [])
 
         form_data = {"query": "testuser3"}
-        response = self.client.get(url, data=form_data)
+        response = self.client.get(url, data=form_data, follow=True)
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(len(response.context["conversation_history"]), 0)
         self.assertEqual(response.context["start_conversations"], [self.user3.username])
 
         form_data = {"query": "testuser"}
-        response = self.client.get(url, data=form_data)
+        response = self.client.get(url, data=form_data, follow=True)
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(
@@ -63,7 +63,7 @@ class MessagingTests(TestCase):
     def test_direct_messaging_view(self):
         self.client.force_login(self.user)
         url = reverse("messaging:direct_messaging", args=[self.user2.username])
-        response = self.client.get(url)
+        response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "messaging/direct_messaging.html")
 
@@ -73,7 +73,7 @@ class MessagingTests(TestCase):
     def test_get_new_messages(self):
         self.client.force_login(self.user)
         url = reverse("messaging:get_new_messages", args=[self.user2.username])
-        response = self.client.get(url)
+        response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = response.json()["messages"]

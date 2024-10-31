@@ -14,7 +14,7 @@ class LoginViewTest(TestCase):
     def test_login_view_get(
         self,
     ):  # accessed via a GET request, check status code is 200 and correct template (app/login.html) is used # noqa: E501
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "app/login.html")
 
@@ -22,7 +22,7 @@ class LoginViewTest(TestCase):
         self,
     ):  # It asserts that the response redirects the user to the map view upon successful login # noqa: E501
         response = self.client.post(
-            self.url, {"username": "testuser", "password": "password"}
+            self.url, {"username": "testuser", "password": "password"},
         )
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("maps:map_view"))
@@ -31,7 +31,7 @@ class LoginViewTest(TestCase):
         self,
     ):  # simulates a login attempt with incorrect credentials via a POST request, asserts that the page reloads (status code 200) and checks for the presence of the error message # noqa: E501
         response = self.client.post(
-            self.url, {"username": "wronguser", "password": "wrongpassword"}
+            self.url, {"username": "wronguser", "password": "wrongpassword"},
         )
         self.assertEqual(response.status_code, 200)
         # Instead of asserting form error, check for error message presence
@@ -45,7 +45,7 @@ class RegisterViewTest(TestCase):
     def test_register_view_get(
         self,
     ):  # accessed via a GET request, check status code is 200 and correct template (app/register.html) is used # noqa: E501
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "app/register.html")
 
@@ -59,6 +59,7 @@ class RegisterViewTest(TestCase):
                 "password1": "testpassword",
                 "password2": "testpassword",
             },
+            follow=True
         )
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("maps:map_view"))
@@ -73,6 +74,7 @@ class RegisterViewTest(TestCase):
                 "password1": "testpassword",
                 "password2": "differentpassword",
             },
+            follow=True
         )
         self.assertEqual(response.status_code, 200)
         # Instead of asserting form error, check for error message presence
@@ -113,20 +115,20 @@ class StationsAccessibilityTest(TestCase):
         station = Station.objects.get(
             gtfs_stop_id="R03"
         )  # Example: Astoria Blvd is ADA accessible
-        response = self.client.get(reverse("app:station_detail", args=[station.id]))
+        response = self.client.get(reverse("app:station_detail", args=[station.id]), follow=True)
         self.assertContains(response, "Accessible: True")
 
         # Test for a station not marked as accessible
         station = Station.objects.get(
             gtfs_stop_id="R01"
         )  # Example: Astoria-Ditmars Blvd is not ADA accessible
-        response = self.client.get(reverse("app:station_detail", args=[station.id]))
+        response = self.client.get(reverse("app:station_detail", args=[station.id]), follow=True)
         self.assertContains(response, "Accessible: False")
 
     def test_go_button_redirect(self):
         # Test clicking the "Go" button and ensure correct redirection to map view with coordinates # noqa: E501
         station = Station.objects.get(gtfs_stop_id="R03")  # Example: Astoria Blvd
-        response = self.client.get(reverse("app:station_detail", args=[station.id]))
+        response = self.client.get(reverse("app:station_detail", args=[station.id]), follow=True)
         go_button_url = (
             reverse("maps:map_view")
             + f"?lat={station.gtfs_latitude}&lng={station.gtfs_longitude}&name={station.stop_name}"  # noqa: E501

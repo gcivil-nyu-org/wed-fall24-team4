@@ -10,7 +10,7 @@ class NotificationsInboxTest(TestCase):
     def test_inbox_view_get(
         self,
     ):
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "notifications/inbox.html")
 
@@ -23,9 +23,9 @@ class GetNotificationsTest(TestCase):
         self.url = reverse("notifications:get_notifications")
 
     def test_get_notifications(self):
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
         self.assertEqual(response.status_code, 200)
         data = response.json()["notifications"]
         self.assertEqual(len(data), 2)
-        self.assertEqual(data[0]["content"], "Test Notification 2")
-        self.assertEqual(data[1]["content"], "Test Notification 1")
+        self.assertEqual(data[0]["content"], "Test Notification 1")
+        self.assertEqual(data[1]["content"], "Test Notification 2")

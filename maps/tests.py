@@ -18,7 +18,7 @@ class MapsViewTests(TestCase):
         self,
     ):  # checks if the correct template map.html is used when accessing the map view via a GET request. asserts that the status code is 200 and the correct template is rendered # noqa: E501
         """Test that the map template is rendered correctly."""
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
         self.assertTemplateUsed(response, "map.html")
         self.assertEqual(response.status_code, 200)
 
@@ -44,7 +44,7 @@ class MapsViewTests(TestCase):
             }
         ]
 
-        response = self.client.post(self.url, self.valid_data)
+        response = self.client.post(self.url, self.valid_data, follow=True)
 
         # Check if the mock was called with expected parameters
         mock_directions.assert_called_once_with(
@@ -68,7 +68,7 @@ class MapsViewTests(TestCase):
         """Test that API errors are handled properly."""
         mock_directions.side_effect = Exception("API Error")
 
-        response = self.client.post(self.url, self.valid_data)
+        response = self.client.post(self.url, self.valid_data, follow=True)
 
         # Check that the error message is present in the context
         self.assertIn("error", response.context)
@@ -79,14 +79,14 @@ class MapsViewTests(TestCase):
     ):  # checks if submitting a form without a starting point or an ending point results in an appropriate error message and make sure the error message is present # noqa: E501
         """Test that missing start or end location returns an error."""
         response = self.client.post(
-            self.url, {"start": "", "end": "Central Park, New York, NY"}
+            self.url, {"start": "", "end": "Central Park, New York, NY"}, follow=True,
         )
         self.assertContains(
             response, "Please enter both a starting point and an ending point."
         )
 
         response = self.client.post(
-            self.url, {"start": "Times Square, New York, NY", "end": ""}
+            self.url, {"start": "Times Square, New York, NY", "end": ""}, follow=True
         )
         self.assertContains(
             response, "Please enter both a starting point and an ending point."
@@ -96,7 +96,7 @@ class MapsViewTests(TestCase):
         self,
     ):  # checks if the Google Maps API key is passed to the template context when the map view is accessed via a GET request # noqa: E501
         """Test that the Google Maps API key is passed to the template context."""
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
         self.assertEqual(
             response.context["google_maps_api_key"], settings.GOOGLE_MAPS_API_KEY
         )
@@ -113,14 +113,14 @@ class ButtonsTest(TestCase):
 
     def test_login_button_exists(self):
         # Checks that login button exists on map page
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True,)
         self.assertContains(
             response, "<button>Login</button>", html=True
         )  # Check if the button is in the page # noqa: E501
 
     def test_login_button_redirect(self):
         # Checks that pressing login button redirects to login screen
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True,)
         self.assertEqual(response.status_code, 200)  # Ensure map page loads correctly
 
         # Simulate logging in by posting credentials to the login view
@@ -134,14 +134,14 @@ class ButtonsTest(TestCase):
 
     def test_register_button_exists(self):
         # Checks register button exists
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
         self.assertContains(
             response, "<button>Register</button>", html=True
         )  # Check if register button is on page
 
     def test_register_button_redirects(self):
         # Simulate pressing the register button
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
         self.assertEqual(response.status_code, 200)  # Ensure the page loads correctly
 
         # Simulate POST request to the registration view with stronger password
@@ -152,6 +152,7 @@ class ButtonsTest(TestCase):
                 "password1": "Str0ngP@ssw0rd123",  # Use a stronger password
                 "password2": "Str0ngP@ssw0rd123",  # Matching password
             },
+            follow=True,
         )
 
         # Check if the form has errors
@@ -165,3 +166,22 @@ class ButtonsTest(TestCase):
         self.assertRedirects(
             response, reverse("maps:map_view")
         )  # Ensure it redirects correctly
+
+class HTTPSTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+    
+    def test_https_redirect(self):
+        # Send a request to an HTTP URL
+        response = self.client.get('/', secure=False)
+        
+        # Check if the response is a redirect (status code 301 or 302)
+        self.assertIn(response.status_code, [301, 302], "Request was not redirected.")
+        
+        # Check if the redirected URL starts with HTTPS
+        redirected_url = response['Location']
+        self.assertTrue(redirected_url.startswith('https://'), "URL was not redirected to HTTPS.")
+
+    def test_secure_ssl_redirect(self):
+        # Check if SECURE_SSL_REDIRECT is set to True in settings
+        self.assertTrue(settings.SECURE_SSL_REDIRECT, "SECURE_SSL_REDIRECT is not enabled.")
