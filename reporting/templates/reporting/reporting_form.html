@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report Status</title>
+</head>
+<body>
+    <a href="{% url 'maps:map_view' %}"><button>Home</button></a>
+    <h1>Report Status</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }} 
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
