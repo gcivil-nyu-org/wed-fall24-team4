@@ -15,12 +15,20 @@ def reporting_form(request):
             station = form.cleaned_data["station"]
             infrastructure = form.cleaned_data["infrastructure"]
             status = form.cleaned_data["status"]
-            
+
             # avoid spam by the same user
-            latest_report_by_sender = Report.objects.filter(sender=request.user).order_by("-timestamp").first()
-            if latest_report_by_sender and current_time - latest_report_by_sender.timestamp <= timedelta(minutes=20):
+            latest_report_by_sender = (
+                Report.objects.filter(sender=request.user)
+                .order_by("-timestamp")
+                .first()
+            )
+            if (
+                latest_report_by_sender
+                and current_time - latest_report_by_sender.timestamp
+                <= timedelta(minutes=20)
+            ):
                 return redirect("maps:map_view")
-            
+
             Report.objects.create(
                 sender=request.user,
                 station=station,
