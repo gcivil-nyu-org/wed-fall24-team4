@@ -62,8 +62,8 @@ def get_notifications(request):
         if count >= 3:
             relevant_notifications.append(
                 {
-                    "content": f"{report_key[0]}'s {report_key[1]} is\
-                        {" in" if status == 'maintenance' else ""} {status}",
+                    "content": f"{report_key[0]}'s {report_key[1]} is"
+                    + f"{' in' if status == 'maintenance' else ''} {status}",
                     "timestamp": timestamp,
                 }
             )
