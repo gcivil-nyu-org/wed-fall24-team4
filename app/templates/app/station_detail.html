@@ -19,59 +19,71 @@
     Station ID: {{ station.station_id }} <br>
      Accessible: {{ station.ada }}</p>
 
+    <h2>Ratings</h2>
+    {% if avg_rating %}
+        <p>Station Average Rating: <strong>{{ avg_rating|floatformat:1}} / 5</strong></p>
+    {% else %}
+        <p>No ratings yet</p>
+    {% endif %}
 
     <table border="1">
         <tr>
-            <th>Complex ID</th>
-            <th>Division</th>
             <th>Line</th>
             <th>Borough</th>
-            <th>CBD</th>
             <th>Daytime Routes</th>
-            <th>Structure</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
-            <th>North Direction Label</th>
             <th>South Direction Label</th>
+            <th>North Direction Label</th>
+
+        </tr>
+        <tr>
+            <td>{{ station.line }}</td>
+            <td>{{ station.borough }}</td>
+            <td>{{ station.daytime_routes }}</td>
+            <td>{{ station.south_direction_label }}</td>
+            <td>{{ station.north_direction_label }}</td>
+
+        </tr>
+    </table>
+    <table border=1>
+        <tr>
             <th>ADA Accessible</th>
             <th>ADA Northbound</th>
             <th>ADA Southbound</th>
-            <th>Georeference Latitude</th>
-            <th>Georeference Longitude</th>
             <th>ADA Notes</th>
-            <th>Computed Region YAMH 8V7K</th>
-            <th>Computed Region WBG7 3WHC</th>
-            <th>Computed Region KJDX G34T</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+
         </tr>
         <tr>
-            <td>{{ station.complex_id }}</td>
-            <td>{{ station.division }}</td>
-            <td>{{ station.line }}</td>
-            <td>{{ station.borough }}</td>
-            <td>{{ station.cbd }}</td>
-            <td>{{ station.daytime_routes }}</td>
-            <td>{{ station.structure }}</td>
-            <td>{{ station.gtfs_latitude }}</td>
-            <td>{{ station.gtfs_longitude }}</td>
-            <td>{{ station.north_direction_label }}</td>
-            <td>{{ station.south_direction_label }}</td>
             <td>{{ station.ada }}</td>
             <td>{{ station.ada_northbound }}</td>
             <td>{{ station.ada_southbound }}</td>
-            <td>{{ station.georeference_latitude }}</td>
-            <td>{{ station.georeference_longitude }}</td>
             <td>{{ station.ada_notes }}</td>
-            <td>{{ station.computed_region_yamh_8v7k }}</td>
-            <td>{{ station.computed_region_wbg7_3whc }}</td>
-            <td>{{ station.computed_region_kjdx_g34t }}</td>
+            <td>{{ station.gtfs_latitude }}</td>
+            <td>{{ station.gtfs_longitude }}</td>
+
         </tr>
     </table>
     
-    
     <a class = "go" href="{% url 'maps:map_view' %}?lat={{ station.gtfs_latitude }}&lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Go</a>
 
-    
-
+<h2>Leave a Rating</h2>
+{% if user.is_authenticated %}
+    <form method="post">
+        {% csrf_token %}
+        <label for="rating">Select Rating (1-5):</label>
+        <select name="rating" id="rating">
+            <option value="1">1 - Poor</option>
+            <option value="2">2 - Fair</option>
+            <option value="3">3 - Good</option>
+            <option value="4">4 - Very Good</option>
+            <option value="5">5 - Excellent</option>
+        </select>
+        <br><button type="submit">Submit</button>
+    </form>
+{% else %}
+    <p>Please <a href="{% url 'app:login' %}">log in</a> to leave a review.</p>
+{% endif %}
 
 </body>
 </html>
