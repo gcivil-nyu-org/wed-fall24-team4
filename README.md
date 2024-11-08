@@ -27,7 +27,7 @@
     python manage.py runserver 
     ```
 
-Link to short URL: [stepfreemta.com]
+Link to short URL: ![stepfreemta.com]
 
 Link to website: [http://stepfreemta-env.eba-je3qmwfd.us-west-2.elasticbeanstalk.com/]
 
